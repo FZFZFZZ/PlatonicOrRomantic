@@ -13,8 +13,8 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 CHATTER_A = "Romantic"
 CHATTER_B = "Romantic"
 
-GENDER_A = "boy"
-GENDER_B = "girl"
+GENDER_A = "girl"
+GENDER_B = "boy"
 
 SEED = 82394
 MAX_GENERATION = 100
@@ -268,7 +268,7 @@ def main():
         new_instance.to_csv(DATA_PATH, mode='a', header=False, index=False)
 
         # occasionally print out the dialogue
-        if i % 1 == 0:
+        if i % 5 == 0:
             logging.info(f"Dialogue: \n{dialogue}")
         i += 1
     

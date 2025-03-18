@@ -1,0 +1,5 @@
+The input dialogue is in a json format. You just need to fill in the empty "response" part at the very end of "conversation" list, using either a response, a "$S$", or a "$EXIT$".
+
+Please do not touch any other part of the dialogue json! 
+Your output must be only an updated JSON file for dialogue. Follow the dialogue json template exactly without any changes in structure or additional keys.
+You do not need explanation for sure. Just a JSON file for updated json. That is very important for information passing. Thank you.

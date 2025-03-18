@@ -69,6 +69,7 @@ def main():
         if CHATTER_A == "Platonic":
             B_info_for_A_to_infer = {
                 "name": "",
+                "gender": "",
                 "occupation": "",
                 "hobby": "",
                 "intention": ""
@@ -76,6 +77,7 @@ def main():
         else:
             B_info_for_A_to_infer = {
                 "name": "",
+                "gender": "",
                 "occupation": "",
                 "major": "",
                 "mbti": "",
@@ -89,6 +91,7 @@ def main():
         if CHATTER_B == "Platonic":
             A_info_for_B_to_infer = {
                 "name": "",
+                "gender": "",
                 "occupation": "",
                 "hobby": "",
                 "intention": ""
@@ -96,6 +99,7 @@ def main():
         else:
             A_info_for_B_to_infer = {
                 "name": "",
+                "gender": "",
                 "occupation": "",
                 "major": "",
                 "mbti": "",

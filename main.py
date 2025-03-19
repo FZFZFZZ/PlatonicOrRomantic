@@ -16,15 +16,15 @@ CHATTER_B = "Platonic"
 GENDER_A = "boy"
 GENDER_B = "girl"
 
-SEED = 7659098
-MAX_GENERATION = 2
+# SEED = 7659098
+MAX_GENERATION = 30
 MAX_CHAT_ROUND = 20
 
 DATA_PATH = "Data/train.csv"
 
 MODEL = "gpt-4o"
 CHEAP_MODEL = "gpt-4o-mini"
-FAST_MODEL = "gpt-4o-turbo"
+FAST_MODEL = "gpt-4-turbo"
 
 def generate_random_time():
     start_date = datetime(2025, 1, 1, 0, 0)
@@ -43,8 +43,8 @@ def clean(output):
     return json_str
 
 def main():
-    np.random.seed(SEED)
-    random.seed(SEED)
+    # np.random.seed(SEED)
+    # random.seed(SEED)
     client = OpenAI()
 
     # get label
@@ -206,7 +206,7 @@ def main():
                      "<dialogue>" + json.dumps(dialogue) + "</dialogue>\n"
                      + "<other's info>" + json.dumps(curr_info_to_infer) + "</other's info>")
                 completion = client.chat.completions.create(
-                    model=MODEL,
+                    model=MODEL if random.random() < 0.9 else CHEAP_MODEL,
                     messages=[
                     {"role": "developer", "content": task_p + "\n" + format_p},
                     {

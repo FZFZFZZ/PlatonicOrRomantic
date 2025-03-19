@@ -10,14 +10,14 @@ import pandas as pd
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
-CHATTER_A = "Romantic"
+CHATTER_A = "Platonic"
 CHATTER_B = "Platonic"
 
 GENDER_A = "boy"
 GENDER_B = "girl"
 
-SEED = 1289173
-MAX_GENERATION = 40
+SEED = 6861
+MAX_GENERATION = 2
 MAX_CHAT_ROUND = 20
 
 DATA_PATH = "Data/train.csv"
@@ -202,9 +202,9 @@ def main():
                 curr_event_chain = event_chain_A if curr == "A" else event_chain_B
                 curr_info_to_infer = A_info_for_B_to_infer if curr == "B" else B_info_for_A_to_infer
                 dialogue["text"].append({"role": curr, "response": ""})
-                p = ("<Role>" + curr_role + "/<Role>\n" + "<event>" + curr_event_chain + 
-                     "/<event>\n" + "<other's info>" + json.dumps(curr_info_to_infer) + "</other's info>\n" + 
-                     "<dialogue>" + json.dumps(dialogue) + "</dialogue>")
+                p = ("<Role>" + curr_role + "/<Role>\n" + "<event>" + curr_event_chain + "/<event>\n" + 
+                     "<dialogue>" + json.dumps(dialogue) + "</dialogue>\n"
+                     + "<other's info>" + json.dumps(curr_info_to_infer) + "</other's info>")
                 completion = client.chat.completions.create(
                     model=MODEL,
                     messages=[

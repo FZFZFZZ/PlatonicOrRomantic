@@ -16,7 +16,7 @@ CHATTER_B = "Platonic"
 GENDER_A = "boy"
 GENDER_B = "girl"
 
-SEED = 6861
+SEED = 7659098
 MAX_GENERATION = 2
 MAX_CHAT_ROUND = 20
 
@@ -138,7 +138,7 @@ def main():
             # Prefill Other's info
             logging.info("Prefilling other's info")
             completion = client.chat.completions.create(
-                    model=CHEAP_MODEL,
+                    model=MODEL,
                     messages=[{
                         "role": "user",
                         "content": f"""I have the following dictionary template for storing inferred information about Person B:\n {B_info_for_A_to_infer} \n
@@ -152,7 +152,7 @@ def main():
             result_dict = json.loads(output)
             B_info_for_A_to_infer.update(result_dict)
             completion = client.chat.completions.create(
-                    model=CHEAP_MODEL,
+                    model=MODEL,
                     messages=[{
                         "role": "user",
                         "content": f"""I have the following dictionary template for storing inferred information about Person A:\n {A_info_for_B_to_infer} \n

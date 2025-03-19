@@ -196,7 +196,9 @@ def initialise(gender):
                                     subject areas, materials, related masters and 
                                     even niche approaches within it. You just need to 
                                     output an answer without explanation. Limit the answer
-                                    in a 60-word paragraph. 
+                                    in a 50-word paragraph. 
+                                    
+                                    "likes to <your response here>"
                                     """,
                         "temperature": 1.2,
                     }]

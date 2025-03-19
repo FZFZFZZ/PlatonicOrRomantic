@@ -16,8 +16,8 @@ CHATTER_B = "Romantic"
 GENDER_A = "girl"
 GENDER_B = "boy"
 
-SEED = 92301
-MAX_GENERATION = 2
+SEED = 92304
+MAX_GENERATION = 10
 MAX_CHAT_ROUND = 20
 
 DATA_PATH = "Data/train.csv"
@@ -274,6 +274,7 @@ def main():
             i += 1
         except Exception as e:
             logging.error(f"Error: {e}. Discard current instance. Move to the next one.")
+            i += 1
             continue
     
     logging.info("Finished generating all data!")

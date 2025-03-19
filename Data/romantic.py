@@ -3,6 +3,11 @@ import numpy as np
 import random
 from datetime import datetime, timedelta
 
+MODEL = "gpt-4o"
+CHEAP_MODEL = "gpt-4o-mini"
+FAST_MODEL = "gpt-4o-turbo"
+REASONING_MODEL = "o3-mini"
+
 def initialise(gender):
 
     # Specify the age
@@ -26,7 +31,7 @@ def initialise(gender):
     # Specify the name
     client = OpenAI()
     completion = client.chat.completions.create(
-        model="gpt-4o",
+        model=CHEAP_MODEL,
         messages=[{
             "role": "user",
             "content": f"""
@@ -61,7 +66,7 @@ def initialise(gender):
                            "No School"]
         occupation = np.random.choice(occupation_list, p=[1/len(occupation_list)]*len(occupation_list))
         completion = client.chat.completions.create(
-            model="gpt-4o",
+            model=CHEAP_MODEL,
             messages=[{
                 "role": "user",
                 "content": f"""
@@ -78,7 +83,7 @@ def initialise(gender):
         if life_track == "Graduate Student":
             occupation = "Graduate Student"
             completion = client.chat.completions.create(
-                model="gpt-4o",
+                model=CHEAP_MODEL,
                 messages=[{
                     "role": "user",
                     "content": f"""
@@ -176,7 +181,7 @@ def initialise(gender):
     for i in range(2):   
         general_hobby = np.random.choice(general_hobby_list, p=[1/len(general_hobby_list)]*len(general_hobby_list))
         completion = client.chat.completions.create(
-                    model="gpt-4o",
+                    model=CHEAP_MODEL,
                     messages=[{
                         "role": "user",
                         "content": f"""
@@ -208,7 +213,7 @@ def initialise(gender):
 
     # specify the Zodiac Signs:
     completion = client.chat.completions.create(
-            model="gpt-4o",
+            model=CHEAP_MODEL,
             messages=[{
                 "role": "user",
                 "content": f"""My friend has birthday {birthday}. What is the zodiac sign 
@@ -286,8 +291,8 @@ def get_story_start_message(self_name, other_name, Role, time):
     i = 0
     while True:
         completion = client.chat.completions.create(
-                model="o3-mini",
-                reasoning_effort="medium",
+                model=REASONING_MODEL,
+                reasoning_effort="low",
                 messages=[{
                     "role": "user",
                     "content": f"""
@@ -300,15 +305,15 @@ def get_story_start_message(self_name, other_name, Role, time):
             )
         story = completion.choices[0].message.content
         completion = client.chat.completions.create(
-                model="o3-mini",
-                reasoning_effort="medium",
+                model=REASONING_MODEL,
+                reasoning_effort="low",
                 messages=[{
                     "role": "user",
                     "content": f"""
                                 Rate the event-chain {story} in terms of "does it match the mood?" 
-                                (on a scale of 1 to 10), "does it match the hobbies and occupations?" (on a scale of 1 to 5) 
+                                (on a scale of 1 to 10), "does it match the hobbies or occupations?" (on a scale of 1 to 5) 
                                 and length (1 means short, 5 means long, on a scale of 1 to 5). 
-                                You must just output the sum of the three numbers
+                                You must just output the one numerical result by summing the three, without any explanation or additional text.
                                 """,
                 }]
             )
@@ -324,8 +329,8 @@ def get_story_receive_message(Role, self_name, time):
     i = 0
     while True:
         completion = client.chat.completions.create(
-                model="o3-mini",
-                reasoning_effort="medium",
+                model=REASONING_MODEL,
+                reasoning_effort="low",
                 messages=[{
                     "role": "user",
                     "content": f"""
@@ -337,15 +342,15 @@ def get_story_receive_message(Role, self_name, time):
             )
         story = completion.choices[0].message.content
         completion = client.chat.completions.create(
-                model="o3-mini",
-                reasoning_effort="medium",
+                model=REASONING_MODEL,
+                reasoning_effort="low",
                 messages=[{
                     "role": "user",
                     "content": f"""
                                 Rate the event-chain {story} in terms of "does it match the mood?" 
-                                (on a scale of 1 to 10), "does it match the hobbies and occupations?" (on a scale of 1 to 5) 
+                                (on a scale of 1 to 10), "does it match the hobbies or occupations?" (on a scale of 1 to 5) 
                                 and length (1 means short, 5 means long, on a scale of 1 to 5). 
-                                You must just output the sum of the three numbers
+                                You must just output the one numerical result by summing the three, without any explanation or additional text.
                                 """,
                 }]
             )

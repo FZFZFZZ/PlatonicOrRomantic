@@ -11,18 +11,20 @@ import pandas as pd
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 CHATTER_A = "Romantic"
-CHATTER_B = "Romantic"
+CHATTER_B = "Platonic"
 
-GENDER_A = "girl"
-GENDER_B = "boy"
+GENDER_A = "boy"
+GENDER_B = "girl"
 
-SEED = 92304
-MAX_GENERATION = 10
+SEED = 1289173
+MAX_GENERATION = 40
 MAX_CHAT_ROUND = 20
 
 DATA_PATH = "Data/train.csv"
 
 MODEL = "gpt-4o"
+CHEAP_MODEL = "gpt-4o-mini"
+FAST_MODEL = "gpt-4o-turbo"
 
 def generate_random_time():
     start_date = datetime(2025, 1, 1, 0, 0)
@@ -30,7 +32,7 @@ def generate_random_time():
     delta_seconds = int((end_date - start_date).total_seconds())
     random_seconds = random.randint(0, delta_seconds)
     random_datetime = start_date + timedelta(seconds=random_seconds)
-    return random_datetime.strftime("%m-%d-%H-%M")
+    return random_datetime.strftime("%m-%d %H:%M")
 
 def clean(output):
     if output.startswith("```json"):
@@ -136,7 +138,7 @@ def main():
             # Prefill Other's info
             logging.info("Prefilling other's info")
             completion = client.chat.completions.create(
-                    model=MODEL,
+                    model=CHEAP_MODEL,
                     messages=[{
                         "role": "user",
                         "content": f"""I have the following dictionary template for storing inferred information about Person B:\n {B_info_for_A_to_infer} \n
@@ -150,7 +152,7 @@ def main():
             result_dict = json.loads(output)
             B_info_for_A_to_infer.update(result_dict)
             completion = client.chat.completions.create(
-                    model=MODEL,
+                    model=CHEAP_MODEL,
                     messages=[{
                         "role": "user",
                         "content": f"""I have the following dictionary template for storing inferred information about Person A:\n {A_info_for_B_to_infer} \n
@@ -223,7 +225,7 @@ def main():
                 if curr == "A":
                     p_update_other = "<dialogue>" + json.dumps(dialogue) + "</dialogue>\n" + "<other's info>" + json.dumps(B_info_for_A_to_infer) + "</other's info>"
                     completion = client.chat.completions.create(
-                        model=MODEL,
+                        model=CHEAP_MODEL,
                         messages=[
                         {"role": "developer", "content": "Given a dialogue <dialogue> containing B's message, update the dictionary template  <other's info> </other's info> for storing inferred information about Person B based on the dialogue. You can leave one empty or unchanged. But try your best to infer the 'intention', if there is such key. Your output must follow the template exactly without any changes in structure or additional keys. Output a JSON object."},
                         {
@@ -237,7 +239,7 @@ def main():
                 else:
                     p_update_other = "<dialogue>" + json.dumps(dialogue) + "</dialogue>\n" + "<other's info>" + json.dumps(A_info_for_B_to_infer) + "</other's info>"
                     completion = client.chat.completions.create(
-                        model=MODEL,
+                        model=CHEAP_MODEL,
                         messages=[
                         {"role": "developer", "content": "Given a dialogue <dialogue> containing A's message, update the dictionary template <other's info> </other's info> for storing inferred information about Person A based on the dialogue. You can leave one empty or unchanged. But try your best to infer the 'intention', if there is such key. Your output must follow the template exactly without any changes in structure or additional keys. Output a JSON object."},
                         {

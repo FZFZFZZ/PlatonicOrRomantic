@@ -294,7 +294,7 @@ def get_story_start_message(self_name, other_name, Role, time):
                                 Tell me a creative but authentic event-chain of a person called {self_name}
                                 which ends at {time} when he/she text his/her newly 
                                 met secret crush {other_name} online. \n 
-                                The role of {self_name} is {Role}. You just need to output an event chain like A --> B --> C...
+                                The role of {self_name} is {Role}, which contains the current mood. You just need to output an event chain like A --> B --> C...
                                 """
                 }]
             )
@@ -305,17 +305,16 @@ def get_story_start_message(self_name, other_name, Role, time):
                 messages=[{
                     "role": "user",
                     "content": f"""
-                                Rate the event-chain {story} in terms of creativity 
-                                (on a scale of 1 to 10), authenticity 
-                                (on a scale of 1 to 10) and length 
-                                (1 means short, 10 means long, on a scale of 1 to 10). 
+                                Rate the event-chain {story} in terms of "does it match the mood?" 
+                                (on a scale of 1 to 10), "does it match the hobbies and occupations?" (on a scale of 1 to 5) 
+                                and length (1 means short, 5 means long, on a scale of 1 to 5). 
                                 You must just output the sum of the three numbers
                                 """,
                 }]
             )
         review_score = int(completion.choices[0].message.content)
         print(review_score)
-        if review_score >= 23 or i >= max_iter:
+        if review_score >= 16 or i >= max_iter:
             break
     return story
 
@@ -331,7 +330,7 @@ def get_story_receive_message(Role, self_name, time):
                     "role": "user",
                     "content": f"""
                                 Tell me a creative but authentic event-chain of a person {self_name} which 
-                                ends at doing something at {time}. Relate that to the person's role. \n
+                                ends at doing something at {time}. Relate that to the person's mood. \n
                                 The role of {self_name} is {Role}. The role of {self_name} is {Role}. \n You just need to output an event chain like A --> B --> C...
                                 """
                 }]
@@ -343,15 +342,15 @@ def get_story_receive_message(Role, self_name, time):
                 messages=[{
                     "role": "user",
                     "content": f"""
-                                Rate the event-chain {story} in terms of creativity 
-                                (on a scale of 1 to 10), authenticity (on a scale of 1 to 10) 
-                                and length (1 means short, 10 means long, on a scale of 1 to 10). 
+                                Rate the event-chain {story} in terms of "does it match the mood?" 
+                                (on a scale of 1 to 10), "does it match the hobbies and occupations?" (on a scale of 1 to 5) 
+                                and length (1 means short, 5 means long, on a scale of 1 to 5). 
                                 You must just output the sum of the three numbers
                                 """,
                 }]
             )
         review_score = int(completion.choices[0].message.content)
         print(review_score)
-        if review_score >= 23 or i >= max_iter:
+        if review_score >= 16 or i >= max_iter:
             break
     return story

@@ -17,7 +17,7 @@ GENDER_A = "boy"
 GENDER_B = "girl"
 
 # SEED = 7659098
-MAX_GENERATION = 52
+MAX_GENERATION = 46
 MAX_CHAT_ROUND = 20
 
 DATA_PATH = "Data/train.csv"
@@ -205,64 +205,73 @@ def main():
                 p = ("<Role>" + curr_role + "/<Role>\n" + "<event>" + curr_event_chain + "/<event>\n" + 
                      "<dialogue>" + json.dumps(dialogue) + "</dialogue>\n"
                      + "<other's info>" + json.dumps(curr_info_to_infer) + "</other's info>")
-                completion = client.chat.completions.create(
-                    model=MODEL,
-                    messages=[
-                    {"role": "developer", "content": task_p + "\n" + format_p},
-                    {
-                        "role": "user",
-                        "content": p
-                    }],
-                    temperature=1.4
-                )   # if use 4o
-                # completion = client_deepseek.chat.completions.create(
-                #     model="deepseek-chat",
-                #     messages=[
-                #     {"role": "system", "content": task_p + "\n" + format_p},
-                #     {
-                #         "role": "user",
-                #         "content": p
-                #     }],
-                #     stream=False
-                # )   # if use deepseek
-                response = completion.choices[0].message.content
-                response = clean(response)
-                dialogue = json.loads(response)
+                
+                i=0
+                while i < 10:
+                    try:
+                        completion = client.chat.completions.create(
+                            model=MODEL,
+                            messages=[
+                                {"role": "developer", "content": task_p + "\n" + format_p},
+                                {"role": "user", "content": p}
+                            ],
+                            temperature=1.3
+                        )
+                        response = completion.choices[0].message.content
+                        response = clean(response)
+                        prev_dialogue = dialogue
+                        dialogue = json.loads(response)
+
+                        # If the conversation ends, break out of the loop.
+                        if dialogue["text"][-1]["response"] == "$EXIT$":
+                            logging.info("Conversation ended!")
+
+                        break
+                    except Exception as e:
+                        logging.error("Error encountered: %s. Regenerating that response...", e)
+                        dialogue = prev_dialogue
+                        i+=1
+                        continue
+                        
                 if dialogue["text"][-1]["response"] == "$EXIT$":
                     logging.info("Conversation ended!")
                     break
                 
                 # update other's info
-                if curr == "A":
-                    p_update_other = "<dialogue>" + json.dumps(dialogue) + "</dialogue>\n" + "<other's info>" + json.dumps(B_info_for_A_to_infer) + "</other's info>"
-                    completion = client.chat.completions.create(
-                        model=MODEL,
-                        messages=[
-                        {"role": "developer", "content": "Given a dialogue <dialogue> containing B's message, update the dictionary template  <other's info> </other's info> for storing inferred information about Person B based on the dialogue. You can leave one empty or unchanged. But try your best to infer the 'intention', if there is such key. Your output must follow the template exactly without any changes in structure or additional keys. Output a JSON object."},
-                        {
-                            "role": "user",
-                            "content": p_update_other
-                        }],
-                        temperature=0.7
-                    )
-                    response = completion.choices[0].message.content
-                    response = clean(response)
-                    B_info_for_A_to_infer = json.loads(response)
-                else:
-                    p_update_other = "<dialogue>" + json.dumps(dialogue) + "</dialogue>\n" + "<other's info>" + json.dumps(A_info_for_B_to_infer) + "</other's info>"
-                    completion = client.chat.completions.create(
-                        model=MODEL,
-                        messages=[
-                        {"role": "developer", "content": "Given a dialogue <dialogue> containing A's message, update the dictionary template <other's info> </other's info> for storing inferred information about Person A based on the dialogue. You can leave one empty or unchanged. But try your best to infer the 'intention', if there is such key. Your output must follow the template exactly without any changes in structure or additional keys. Output a JSON object."},
-                        {
-                            "role": "user",
-                            "content": p_update_other
-                        }],
-                        temperature=0.7
-                    )
-                    response = completion.choices[0].message.content
-                    response = clean(response)
-                    A_info_for_B_to_infer = json.loads(response)
+                try:
+                    if curr == "A":
+                        p_update_other = "<dialogue>" + json.dumps(dialogue) + "</dialogue>\n" + "<other's info>" + json.dumps(B_info_for_A_to_infer) + "</other's info>"
+                        completion = client.chat.completions.create(
+                            model=MODEL,
+                            messages=[
+                            {"role": "developer", "content": "Given a dialogue <dialogue> containing B's message, update the dictionary template  <other's info> </other's info> for storing inferred information about Person B based on the dialogue. You can leave one empty or unchanged. But try your best to infer the 'intention', if there is such key. Your output must follow the template exactly without any changes in structure or additional keys. Output a JSON object."},
+                            {
+                                "role": "user",
+                                "content": p_update_other
+                            }],
+                            temperature=0.7
+                        )
+                        response = completion.choices[0].message.content
+                        response = clean(response)
+                        B_info_for_A_to_infer = json.loads(response)
+                    else:
+                        p_update_other = "<dialogue>" + json.dumps(dialogue) + "</dialogue>\n" + "<other's info>" + json.dumps(A_info_for_B_to_infer) + "</other's info>"
+                        completion = client.chat.completions.create(
+                            model=MODEL,
+                            messages=[
+                            {"role": "developer", "content": "Given a dialogue <dialogue> containing A's message, update the dictionary template <other's info> </other's info> for storing inferred information about Person A based on the dialogue. You can leave one empty or unchanged. But try your best to infer the 'intention', if there is such key. Your output must follow the template exactly without any changes in structure or additional keys. Output a JSON object."},
+                            {
+                                "role": "user",
+                                "content": p_update_other
+                            }],
+                            temperature=0.7
+                        )
+                        response = completion.choices[0].message.content
+                        response = clean(response)
+                        A_info_for_B_to_infer = json.loads(response)
+                except Exception as e:
+                    logging.info("Fail to update. Continue")
+                    continue
 
                 # switch role
                 curr = "A" if curr == "B" else "B"

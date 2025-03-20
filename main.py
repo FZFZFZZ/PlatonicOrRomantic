@@ -17,14 +17,13 @@ GENDER_A = "boy"
 GENDER_B = "girl"
 
 # SEED = 7659098
-MAX_GENERATION = 200
+MAX_GENERATION = 52
 MAX_CHAT_ROUND = 20
 
 DATA_PATH = "Data/train.csv"
 
 MODEL = "gpt-4o"
 CHEAP_MODEL = "gpt-4o-mini"
-FAST_MODEL = "gpt-4-turbo"
 
 def generate_random_time():
     start_date = datetime(2025, 1, 1, 0, 0)
@@ -46,6 +45,7 @@ def main():
     # np.random.seed(SEED)
     # random.seed(SEED)
     client = OpenAI()
+    client_deepseek = OpenAI(api_key="sk-85a6104c32ca417382a57671b3e26fc7", base_url="https://api.deepseek.com")
 
     # get label
     if CHATTER_A == "Platonic" and CHATTER_B == "Platonic":
@@ -212,8 +212,19 @@ def main():
                     {
                         "role": "user",
                         "content": p
-                    }]
-                )
+                    }],
+                    temperature=1.4
+                )   # if use 4o
+                # completion = client_deepseek.chat.completions.create(
+                #     model="deepseek-chat",
+                #     messages=[
+                #     {"role": "system", "content": task_p + "\n" + format_p},
+                #     {
+                #         "role": "user",
+                #         "content": p
+                #     }],
+                #     stream=False
+                # )   # if use deepseek
                 response = completion.choices[0].message.content
                 response = clean(response)
                 dialogue = json.loads(response)
@@ -231,7 +242,8 @@ def main():
                         {
                             "role": "user",
                             "content": p_update_other
-                        }]
+                        }],
+                        temperature=0.7
                     )
                     response = completion.choices[0].message.content
                     response = clean(response)
@@ -245,7 +257,8 @@ def main():
                         {
                             "role": "user",
                             "content": p_update_other
-                        }]
+                        }],
+                        temperature=0.7
                     )
                     response = completion.choices[0].message.content
                     response = clean(response)
@@ -275,8 +288,7 @@ def main():
                 logging.info(f"Dialogue: \n{dialogue}")
             i += 1
         except Exception as e:
-            logging.error(f"Error: {e}. Discard current instance. Move to the next one.")
-            i += 1
+            logging.error(f"Error: {e}. Discard current instance. Regenerate the current one.")
             continue
     
     logging.info("Finished generating all data!")

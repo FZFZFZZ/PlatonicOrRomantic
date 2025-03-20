@@ -21,7 +21,7 @@ def initialise(gender):
                          "Foreigner-American", "Foreigner-Australian", "Foreigner-Canadian", "Foreigner-British", "Foreigner-French",
                          "Foreigner-German", "Foreigner-Italian", "Foreigner-Spanish", "Foreigner-Russian", "Foreigner-Brazilian",
                          "Foreigner-Taiwanese", "Foreigner-Hong Konger", "Foreigner-Macanese"]
-    weights = [40, 10, 10, 10, 1,
+    weights = [200, 50, 50, 50, 1,
                1, 2, 2, 1, 1,
                1, 1, 1, 1, 1,
                1, 1, 1, 1, 1, 
@@ -74,7 +74,7 @@ def initialise(gender):
                             He/she is studying in {occupation}. Guess the major of the person. 
                             You must just output a major.
                             """,
-                "temperature": 1.0,
+                "temperature": 0.5,
             }]
         )
         major = completion.choices[0].message.content
@@ -92,7 +92,7 @@ def initialise(gender):
                                 Guess the major of the person. 
                                 You must just output a major.
                                 """,
-                    "temperature": 1.0,
+                    "temperature": 0.5,
                 }]
             )
             major = completion.choices[0].message.content

@@ -267,77 +267,113 @@ def initialise(gender):
     Role = np.random.choice([Role_1, Role_2, Role_3], p=[0.4, 0.4, 0.2])
     return name, Role
 
+#def get_story_start_message(self_name, other_name, Role, time):
+#    client = OpenAI()
+#    max_iter = 3
+#    i = 0
+#    while True:
+#        completion = client.chat.completions.create(
+#                model=REASONING_MODEL,
+#                reasoning_effort="low",
+#                messages=[{
+#                    "role": "user",
+#                    "content": f"""
+#                                Tell me a creative but authentic event-chain of a person called {self_name}
+#                                which ends at {time} when he/she text his/her new normal friend
+#                                {other_name} online. \n 
+#                                The role of {self_name} is {Role}, which contains the current mood. \n You just need to output an event chain like A --> B --> C...
+#                                """
+#                }]
+#            )
+#        story = completion.choices[0].message.content
+#        completion = client.chat.completions.create(
+#                model=REASONING_MODEL,
+#                reasoning_effort="low",
+#                messages=[{
+#                    "role": "user",
+#                    "content": f"""
+#                                Rate the event-chain {story} in terms of "does it match the mood?" 
+#                                (on a scale of 1 to 10), "does it match the hobbies or occupations?" (on a scale of 1 to 5) 
+#                                and length (1 means short, 5 means long, on a scale of 1 to 5). 
+#                                You must just output the one numerical result by summing the three, without any explanation or additional text.
+#                                """,
+#                }]
+#            )
+#        review_score = int(completion.choices[0].message.content)
+#        print(review_score)
+#        if review_score >= 16 or i >= max_iter:
+#            break
+#    return story
+#
+#def get_story_receive_message(Role, self_name, time):
+#    client = OpenAI()
+#    max_iter = 5
+#    i = 0
+#    while True:
+#        completion = client.chat.completions.create(
+#                model=REASONING_MODEL,
+#                reasoning_effort="medium",
+#                messages=[{
+#                    "role": "user",
+#                    "content": f"""
+#                                Tell me a creative but authentic event-chain of a person {self_name} which 
+#                                ends at doing something at {time}. Relate that to the person's mood. \n
+#                                The role of {self_name} is {Role}. 
+#                                """
+#                }]
+#            )
+#        story = completion.choices[0].message.content
+#        completion = client.chat.completions.create(
+#                model=REASONING_MODEL,
+#                reasoning_effort="medium",
+#                messages=[{
+#                    "role": "user",
+#                    "content": f"""
+#                                Rate the event-chain {story} in terms of "does it match the mood?" 
+#                                (on a scale of 1 to 10), "does it match the hobbies or occupations?" (on a scale of 1 to 5) 
+#                                and length (1 means short, 5 means long, on a scale of 1 to 5). 
+#                                You must just output the one numerical result by summing the three, without any explanation or additional text.
+#                                """,
+#                }]
+#            )
+#        review_score = int(completion.choices[0].message.content)
+#        print(review_score)
+#        if review_score >= 16 or i >= max_iter:
+#            break
+#    return story
+
+
 def get_story_start_message(self_name, other_name, Role, time):
     client = OpenAI()
-    max_iter = 3
-    i = 0
-    while True:
-        completion = client.chat.completions.create(
-                model=REASONING_MODEL,
-                reasoning_effort="low",
-                messages=[{
-                    "role": "user",
-                    "content": f"""
-                                Tell me a creative but authentic event-chain of a person called {self_name}
-                                which ends at {time} when he/she text his/her new normal friend
-                                {other_name} online. \n 
-                                The role of {self_name} is {Role}, which contains the current mood. \n You just need to output an event chain like A --> B --> C...
-                                """
-                }]
-            )
-        story = completion.choices[0].message.content
-        completion = client.chat.completions.create(
-                model=REASONING_MODEL,
-                reasoning_effort="low",
-                messages=[{
-                    "role": "user",
-                    "content": f"""
-                                Rate the event-chain {story} in terms of "does it match the mood?" 
-                                (on a scale of 1 to 10), "does it match the hobbies or occupations?" (on a scale of 1 to 5) 
-                                and length (1 means short, 5 means long, on a scale of 1 to 5). 
-                                You must just output the one numerical result by summing the three, without any explanation or additional text.
-                                """,
-                }]
-            )
-        review_score = int(completion.choices[0].message.content)
-        print(review_score)
-        if review_score >= 16 or i >= max_iter:
-            break
+    completion = client.chat.completions.create(
+            model=REASONING_MODEL,
+            reasoning_effort="low",
+            messages=[{
+                "role": "user",
+                "content": f"""
+                            Tell me a creative but authentic event-chain of a person called {self_name}
+                            which ends at {time} when he/she text his/her new normal friend
+                            {other_name} online. \n 
+                            The role of {self_name} is {Role}, which contains the current mood. \n You just need to output an event chain like A --> B --> C...
+                            """
+            }]
+        )
+    story = completion.choices[0].message.content
     return story
 
 def get_story_receive_message(Role, self_name, time):
     client = OpenAI()
-    max_iter = 5
-    i = 0
-    while True:
-        completion = client.chat.completions.create(
-                model=REASONING_MODEL,
-                reasoning_effort="medium",
-                messages=[{
-                    "role": "user",
-                    "content": f"""
-                                Tell me a creative but authentic event-chain of a person {self_name} which 
-                                ends at doing something at {time}. Relate that to the person's mood. \n
-                                The role of {self_name} is {Role}. 
-                                """
-                }]
-            )
-        story = completion.choices[0].message.content
-        completion = client.chat.completions.create(
-                model=REASONING_MODEL,
-                reasoning_effort="medium",
-                messages=[{
-                    "role": "user",
-                    "content": f"""
-                                Rate the event-chain {story} in terms of "does it match the mood?" 
-                                (on a scale of 1 to 10), "does it match the hobbies or occupations?" (on a scale of 1 to 5) 
-                                and length (1 means short, 5 means long, on a scale of 1 to 5). 
-                                You must just output the one numerical result by summing the three, without any explanation or additional text.
-                                """,
-                }]
-            )
-        review_score = int(completion.choices[0].message.content)
-        print(review_score)
-        if review_score >= 16 or i >= max_iter:
-            break
+    completion = client.chat.completions.create(
+            model=REASONING_MODEL,
+            reasoning_effort="medium",
+            messages=[{
+                "role": "user",
+                "content": f"""
+                            Tell me a creative but authentic event-chain of a person {self_name} which 
+                            ends at doing something at {time}. Relate that to the person's mood. \n
+                            The role of {self_name} is {Role}. 
+                            """
+            }]
+        )
+    story = completion.choices[0].message.content
     return story

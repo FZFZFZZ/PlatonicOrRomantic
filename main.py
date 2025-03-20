@@ -17,7 +17,7 @@ GENDER_A = "boy"
 GENDER_B = "girl"
 
 # SEED = 7659098
-MAX_GENERATION = 30
+MAX_GENERATION = 200
 MAX_CHAT_ROUND = 20
 
 DATA_PATH = "Data/train.csv"
@@ -206,7 +206,7 @@ def main():
                      "<dialogue>" + json.dumps(dialogue) + "</dialogue>\n"
                      + "<other's info>" + json.dumps(curr_info_to_infer) + "</other's info>")
                 completion = client.chat.completions.create(
-                    model=MODEL if random.random() < 0.9 else CHEAP_MODEL,
+                    model=MODEL,
                     messages=[
                     {"role": "developer", "content": task_p + "\n" + format_p},
                     {
@@ -225,7 +225,7 @@ def main():
                 if curr == "A":
                     p_update_other = "<dialogue>" + json.dumps(dialogue) + "</dialogue>\n" + "<other's info>" + json.dumps(B_info_for_A_to_infer) + "</other's info>"
                     completion = client.chat.completions.create(
-                        model=CHEAP_MODEL,
+                        model=MODEL,
                         messages=[
                         {"role": "developer", "content": "Given a dialogue <dialogue> containing B's message, update the dictionary template  <other's info> </other's info> for storing inferred information about Person B based on the dialogue. You can leave one empty or unchanged. But try your best to infer the 'intention', if there is such key. Your output must follow the template exactly without any changes in structure or additional keys. Output a JSON object."},
                         {
@@ -239,7 +239,7 @@ def main():
                 else:
                     p_update_other = "<dialogue>" + json.dumps(dialogue) + "</dialogue>\n" + "<other's info>" + json.dumps(A_info_for_B_to_infer) + "</other's info>"
                     completion = client.chat.completions.create(
-                        model=CHEAP_MODEL,
+                        model=MODEL,
                         messages=[
                         {"role": "developer", "content": "Given a dialogue <dialogue> containing A's message, update the dictionary template <other's info> </other's info> for storing inferred information about Person A based on the dialogue. You can leave one empty or unchanged. But try your best to infer the 'intention', if there is such key. Your output must follow the template exactly without any changes in structure or additional keys. Output a JSON object."},
                         {

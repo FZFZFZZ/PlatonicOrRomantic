@@ -10,14 +10,14 @@ import pandas as pd
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
-CHATTER_A = "Platonic"
+CHATTER_A = "Romantic"
 CHATTER_B = "Platonic"
 
-GENDER_A = "boy"
-GENDER_B = "girl"
+GENDER_A = "girl"
+GENDER_B = "boy"
 
 # SEED = 7659098
-MAX_GENERATION = 46
+MAX_GENERATION = 82
 MAX_CHAT_ROUND = 20
 
 DATA_PATH = "Data/train.csv"
@@ -206,8 +206,8 @@ def main():
                      "<dialogue>" + json.dumps(dialogue) + "</dialogue>\n"
                      + "<other's info>" + json.dumps(curr_info_to_infer) + "</other's info>")
                 
-                i=0
-                while i < 10:
+                k=0
+                while k < 10:
                     try:
                         completion = client.chat.completions.create(
                             model=MODEL,
@@ -230,7 +230,7 @@ def main():
                     except Exception as e:
                         logging.error("Error encountered: %s. Regenerating that response...", e)
                         dialogue = prev_dialogue
-                        i+=1
+                        k+=1
                         continue
                         
                 if dialogue["text"][-1]["response"] == "$EXIT$":

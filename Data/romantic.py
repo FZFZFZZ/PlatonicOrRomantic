@@ -45,7 +45,7 @@ def initialise(gender):
     name = completion.choices[0].message.content
 
     # Specify the occupation, major and income
-    if (nationality == "Singapore" and age <= 20 and age > 18):
+    if (nationality == "Singaporean" and age <= 20 and age > 18):
         if gender == "boy":
             occupation = "National Service"
             major = "N.A."

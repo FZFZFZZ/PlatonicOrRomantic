@@ -11,13 +11,13 @@ import pandas as pd
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 CHATTER_A = "Romantic"
-CHATTER_B = "Platonic"
+CHATTER_B = "Romantic"
 
-GENDER_A = "girl"
-GENDER_B = "boy"
+GENDER_A = "boy"
+GENDER_B = "girl"
 
 # SEED = 7659098
-MAX_GENERATION = 82
+MAX_GENERATION = 20
 MAX_CHAT_ROUND = 20
 
 DATA_PATH = "Data/train.csv"

@@ -7,6 +7,9 @@ import json
 from datetime import datetime, timedelta
 import random
 import pandas as pd
+import dotenv
+
+dotenv.load_dotenv()
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 

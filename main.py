@@ -13,12 +13,12 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 CHATTER_A = "Romantic"
 CHATTER_B = "Romantic"
 
-GENDER_A = "boy"
-GENDER_B = "girl"
+GENDER_A = "girl"
+GENDER_B = "boy"
 
 # SEED = 7659098
-MAX_GENERATION = 20
-MAX_CHAT_ROUND = 20
+MAX_GENERATION = 1
+MAX_CHAT_ROUND = 15
 
 DATA_PATH = "Data/train.csv"
 
@@ -215,12 +215,13 @@ def main():
                                 {"role": "developer", "content": task_p + "\n" + format_p},
                                 {"role": "user", "content": p}
                             ],
-                            temperature=1.3
+                            temperature=1.2
                         )
                         response = completion.choices[0].message.content
                         response = clean(response)
                         prev_dialogue = dialogue
                         dialogue = json.loads(response)
+
 
                         # If the conversation ends, break out of the loop.
                         if dialogue["text"][-1]["response"] == "$EXIT$":
@@ -242,14 +243,14 @@ def main():
                     if curr == "A":
                         p_update_other = "<dialogue>" + json.dumps(dialogue) + "</dialogue>\n" + "<other's info>" + json.dumps(B_info_for_A_to_infer) + "</other's info>"
                         completion = client.chat.completions.create(
-                            model=MODEL,
+                            model=CHEAP_MODEL,
                             messages=[
-                            {"role": "developer", "content": "Given a dialogue <dialogue> containing B's message, update the dictionary template  <other's info> </other's info> for storing inferred information about Person B based on the dialogue. You can leave one empty or unchanged. But try your best to infer the 'intention', if there is such key. Your output must follow the template exactly without any changes in structure or additional keys. Output a JSON object."},
+                            {"role": "developer", "content": "Given a dialogue <dialogue> containing B's message, update the dictionary template  <other's info> </other's info> for storing inferred information about Person B based on the dialogue. You can leave one empty or unchanged. But try your best to infer the 'intention', if there is such key. Your output must follow the template exactly without any changes in structure or additional keys. Use simple words and less words.Output a JSON object."},
                             {
                                 "role": "user",
                                 "content": p_update_other
                             }],
-                            temperature=0.7
+                            temperature=0.5
                         )
                         response = completion.choices[0].message.content
                         response = clean(response)
@@ -257,14 +258,14 @@ def main():
                     else:
                         p_update_other = "<dialogue>" + json.dumps(dialogue) + "</dialogue>\n" + "<other's info>" + json.dumps(A_info_for_B_to_infer) + "</other's info>"
                         completion = client.chat.completions.create(
-                            model=MODEL,
+                            model=CHEAP_MODEL,
                             messages=[
-                            {"role": "developer", "content": "Given a dialogue <dialogue> containing A's message, update the dictionary template <other's info> </other's info> for storing inferred information about Person A based on the dialogue. You can leave one empty or unchanged. But try your best to infer the 'intention', if there is such key. Your output must follow the template exactly without any changes in structure or additional keys. Output a JSON object."},
+                            {"role": "developer", "content": "Given a dialogue <dialogue> containing A's message, update the dictionary template <other's info> </other's info> for storing inferred information about Person A based on the dialogue. You can leave one empty or unchanged. But try your best to infer the 'intention', if there is such key. Your output must follow the template exactly without any changes in structure or additional keys. Use simple words and less words. Output a JSON object."},
                             {
                                 "role": "user",
                                 "content": p_update_other
                             }],
-                            temperature=0.7
+                            temperature=0.5
                         )
                         response = completion.choices[0].message.content
                         response = clean(response)

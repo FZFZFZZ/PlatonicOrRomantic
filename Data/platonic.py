@@ -227,21 +227,15 @@ def initialise(gender):
     
     # Synthesize the information
     Role_1 = f"""
-              Your name is {name}. You live in Singapore. You are a {age} years old {gender}. You are a {occupation}. You like to {hobby}. 
-              Recently, you are using a socialising app and meet a friend. You do not really want to pursue a romantic relationship
-              with the friend. Thus, you try your best to avoid being too intimate with the friend (e.g. two people alone).
-              But you two still share similar hobbies, which make that your friend indeed. \n
-              
-              Some more background:
-              Your MBTI: {mbti}; Your birthday: {birthday} ({zodiac_sign}); Your major of study: {major};
-              Your nationality: {nationality}; Your current mood: {mood}. 
+              Your name is {name}, a {age}-year-old {gender} from Singapore working as a {occupation} who enjoys {hobby}. You're using a social app and met a friend, but you're not looking for romance—so you avoid too much intimacy, like being alone together. Still, you connect over shared hobbies.
+              Background: MBTI {mbti}; Birthday: {birthday} ({zodiac_sign}); Major: {major}; Nationality: {nationality}; Mood: {mood}.
               """
     
     Role_2 = f"""
               Your name is {name}. You live in Singapore. You are a {age} years old {gender}. You are a {occupation}. You like to {hobby}.
               Wow! You have just met a new friend on a socialising app. You treat that as your best brother. 
               You share every shit and jokes with that big homie.
-              Which is to say, the relationship is too platonic that 
+              The relationship is too platonic that 
               you have not even thought about any romantic relationship. \n
               
               Some more background:
@@ -250,18 +244,8 @@ def initialise(gender):
               """
     
     Role_3 = f"""
-              Your name is {name}. You live in Singapore. You are a {age} years old {gender}. You are a {occupation}. You like to {hobby}.
-              You have always felt that romantic and sexual relationships are not really your thing. 
-              You enjoy deep friendships and meaningful connections, but the idea of being in a romantic relationship
-              or engaging in intimacy has never been appealing to you. 
-      
-              You recently met a new friend on a socialising app. You enjoy their company and like spending time together, 
-              but you view relationships in a way that is purely based on companionship rather than romance or attraction. 
-              You are clear about your identity and boundaries, and you feel comfortable expressing them. \n
-              
-              Some more background:
-              Your MBTI: {mbti}; Your birthday: {birthday} ({zodiac_sign}); Your major of study: {major};
-              Your nationality: {nationality}; Your current mood: {mood}. 
+              Your name is {name}, a {age}-year-old {gender} from Singapore working as a {occupation} who enjoys {hobby}. You don't find romantic or sexual relationships appealing—instead, you value deep friendships and meaningful connections. Recently, you met a friend on a social app, and while you enjoy their company, you keep things purely platonic, staying true to your boundaries.
+              Background: MBTI {mbti}; Birthday: {birthday} ({zodiac_sign}); Major: {major}; Nationality: {nationality}; Mood: {mood}.
               """
     
     Role = np.random.choice([Role_1, Role_2, Role_3], p=[0.4, 0.4, 0.2])
@@ -352,9 +336,9 @@ def get_story_start_message(self_name, other_name, Role, time):
                 "role": "user",
                 "content": f"""
                             Tell me a creative but authentic event-chain of a person called {self_name}
-                            which ends at {time} when he/she text his/her new normal friend
+                            which ends at {time} (24-hour clock) when he/she text his/her new normal friend
                             {other_name} online. \n 
-                            The role of {self_name} is {Role}, which contains the current mood. \n You just need to output an event chain like A --> B --> C...
+                            The role of {self_name} is {Role}, which contains the current mood. \n You just need to output an event chain like A --> B --> C... Highly summarise the event chain.
                             """
             }]
         )
@@ -370,8 +354,8 @@ def get_story_receive_message(Role, self_name, time):
                 "role": "user",
                 "content": f"""
                             Tell me a creative but authentic event-chain of a person {self_name} which 
-                            ends at doing something at {time}. Relate that to the person's mood. \n
-                            The role of {self_name} is {Role}. 
+                            ends at doing something at {time} (24-hour clock). Relate that to the person's mood. \n
+                            The role of {self_name} is {Role}. Highly summarise the event chain.
                             """
             }]
         )

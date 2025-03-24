@@ -292,7 +292,7 @@ def get_story_start_message(self_name, other_name, Role, time):
                             Tell me a creative but authentic event-chain of a person called {self_name}
                             which ends at {time} (24-hour clock) when he/she text his/her newly 
                             met secret crush {other_name} online. \n 
-                            The role of {self_name} is {Role}, which contains the current mood. You just need to output an event chain like A --> B --> C... Highly summarise the event chain.
+                            The role of {self_name} is {Role}, which contains the current mood. You just need to output an event chain like A --> B --> C... Highly summarise the event chain. Not too long.
                             """
             }]
         )
@@ -347,7 +347,7 @@ def get_story_receive_message(Role, self_name, time):
                 "content": f"""
                             Tell me a creative but authentic event-chain of a person {self_name} which 
                             ends at doing something at {time} (24-hour clock). Relate that to the person's mood. \n
-                            The role of {self_name} is {Role}. The role of {self_name} is {Role}. \n You just need to output an event chain like A --> B --> C... Highly summarise the event chain.
+                            The role of {self_name} is {Role}. The role of {self_name} is {Role}. \n You just need to output an event chain like A --> B --> C... Highly summarise the event chain. Not too long.
                             """
             }]
         )

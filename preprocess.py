@@ -43,6 +43,9 @@ def preprocess_data(file: str = "Data/train.csv", embeddings_file: str = "vector
             for token in doc:
                 if token.lemma_ in embeddings:
                     embeddings_data.append(embeddings[token.lemma_])
+            # This may cause issues because we are ignoring sentences only with emojis
+            if len(embeddings_data) == 0:
+                continue
             embeddings_data = np.array(embeddings_data)
             dialogue_data.append((role, embeddings_data))
         if len(dialogue_data) > 0:

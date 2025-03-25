@@ -17,10 +17,10 @@ CHATTER_A = "Romantic"
 CHATTER_B = "Romantic"
 
 GENDER_A = "girl"
-GENDER_B = "boy"
+GENDER_B = "girl"
 
 # SEED = 7659098
-MAX_GENERATION = 1
+MAX_GENERATION = 29
 MAX_CHAT_ROUND = 15
 
 DATA_PATH = "Data/train.csv"
@@ -65,7 +65,7 @@ def main():
     i = 0
     while i < MAX_GENERATION:
         try:
-            logging.info(f"Generation {i}")
+            logging.info(f"\n\n\nGeneration {i}\n\n\n")
 
             # initialise empty dialogue dict and empty other's info
             logging.info("Initialising dialogue and other's info")
@@ -230,7 +230,6 @@ def main():
                         prev_dialogue = dialogue
                         dialogue = json.loads(response)
 
-
                         # If the conversation ends, break out of the loop.
                         if dialogue["text"][-1]["response"] == "$EXIT$":
                             logging.info("Conversation ended!")
@@ -259,7 +258,7 @@ def main():
                                     "role": "user",
                                     "content": p_update_other
                                 }],
-                                temperature=0.5
+                                temperature=0.3
                             )
                             response = completion.choices[0].message.content
                             response = clean(response)
@@ -274,7 +273,7 @@ def main():
                                     "role": "user",
                                     "content": p_update_other
                                 }],
-                                temperature=0.5
+                                temperature=0.3
                             )
                             response = completion.choices[0].message.content
                             response = clean(response)
@@ -303,7 +302,7 @@ def main():
             new_instance.to_csv(DATA_PATH, mode='a', header=False, index=False)
 
             # occasionally print out the dialogue
-            if i % 1 == 0:
+            if i % 10 == 0:
                 logging.info(f"Dialogue: \n{dialogue}")
             i += 1
         except Exception as e:

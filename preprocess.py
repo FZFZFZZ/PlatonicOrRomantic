@@ -45,7 +45,8 @@ def preprocess_data(file: str = "Data/train.csv", embeddings_file: str = "vector
                     embeddings_data.append(embeddings[token.lemma_])
             embeddings_data = np.array(embeddings_data)
             dialogue_data.append((role, embeddings_data))
-        data.append((dialogue_data, label))
+        if len(dialogue_data) > 0:
+            data.append((dialogue_data, label))
     with open("features.pkl", "wb") as f:
         pickle.dump(data, f)
     return data

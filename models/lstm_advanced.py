@@ -117,6 +117,7 @@ def load():
     return X, y
 
 def main():
+    torch.manual_seed(42)
     X, y = load()
     print(f"Data loaded with size: {len(X)}")
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)

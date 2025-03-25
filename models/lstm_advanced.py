@@ -1,10 +1,14 @@
 import torch
 from torch import nn
-import random
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import f1_score
+import numpy as np
 
 from preprocess import load_data, Dialog, Label
+
+VECTOR_SIZE = 50
+MICRO_SEQUENCE_LENGTH = 40
+MACRO_SEQUENCE_LENGTH = 25
 
 class LstmAdvanced(nn.Module):
     def __init__(self,
@@ -26,6 +30,7 @@ class LstmAdvanced(nn.Module):
             nn.Linear(small_hidden_size, small_output_size),
             nn.Sigmoid(),
         )
+        self.V = small_output_size
         self.large_conv1d = nn.Conv1d(in_channels=1,
                                       out_channels=1,
                                       kernel_size=large_sequence_size,
@@ -37,54 +42,78 @@ class LstmAdvanced(nn.Module):
             nn.Linear(large_hidden_size, 3)
         )
     
-    def forward(self, x: Dialog) -> torch.Tensor:
-        large_inputs = []  # size: L, V
-        for text in x:
-            _, embeddings = text
-            if embeddings.shape == (0,):
-                continue
-            small_inputs = torch.tensor(embeddings).T.unsqueeze(dim=1)  # size: (v, 1, l)
-            small_lstm_inputs = self.small_conv1d(small_inputs).squeeze().T  # size: (l', v)
-            _0, (small_lstm_output, _1) = self.small_lstm(small_lstm_inputs)  # size: (1, h)
-            small_lstm_output = small_lstm_output[0]  # size: h
-            small_output = self.small_output(small_lstm_output)  # size: V
-            large_inputs.append(small_output)
-        
-        if len(large_inputs) == 0:
-            print(x)
-        large_inputs = torch.stack(large_inputs).T.unsqueeze(dim=1)  # size: (V, 1, L)
-        large_lstm_inputs = self.large_conv1d(large_inputs).squeeze().T  # size: (L', V)
-        _0, (large_lstm_output, _1) = self.large_lstm(large_lstm_inputs)  # size: (1, H)
-        large_lstm_output = large_lstm_output[0]  # size: H
-        return self.large_output(large_lstm_output)  # size: 3
+    def forward(self, x: torch.Tensor) -> torch.Tensor:  # size of x: (N, L, l, v)
+        N, L, l, v = x.shape
+        small_inputs = x.transpose(2, 3).reshape(N * L * v, l).unsqueeze(dim=1)  # size: (N * L * v, 1, l)
+        small_lstm_inputs = self.small_conv1d(small_inputs).squeeze()  # size: (N * L * v, l')
+        small_lstm_inputs = small_lstm_inputs.reshape(N * L, v, -1).transpose(1, 2)  # size: (N * L, l', v)
+        _, (small_lstm_output, _) = self.small_lstm(small_lstm_inputs)  # size: (1, N * L, h)
+        small_lstm_output = small_lstm_output[0]  # size: (N * L, h)
+        small_outputs = self.small_output(small_lstm_output)  # size: (N * L, V)
+        large_inputs = small_outputs.reshape(N, L, self.V).transpose(1, 2).reshape(N * self.V, L).unsqueeze(dim=1)  # size: (N * V, 1, L)
+        large_lstm_inputs = self.large_conv1d(large_inputs).squeeze().reshape(N, self.V, -1).transpose(1, 2)  # size: (N, L', V)
+        _, (large_lstm_output, _) = self.large_lstm(large_lstm_inputs)  # size: (1, N, H)
+        large_lstm_output = large_lstm_output[0]  # size: (N, H)
+        return self.large_output(large_lstm_output)  # size: (N, 3)
 
 
-def train(X: list[Dialog], y: list[Label], lr: float = 0.01, epochs: int = 2000) -> nn.Module:
-    y = torch.tensor(y) + 1
+def train(X: torch.Tensor, y: torch.Tensor, lr: float = 0.001, epochs: int = 100) -> nn.Module:
+    """
+    Parameters
+    ---
+    X: torch.Tensor
+        The input data of size (N, L, l, v),
+        where N is the number of dialogues,
+        L is the number of texts per dialogue,
+        l is the number of tokens per text,
+        and v is the size of the token vector.
+    y: torch.Tensor
+        The target data of size (N,).
+        The numbers are 0, 1, or 2.
+    lr: float
+        The learning rate.
+    epochs: int
+        The number of epochs to train the model.
+    
+    Returns
+    ---
+    nn.Module
+        The trained model.
+    """
     model = LstmAdvanced()
     criterion = nn.CrossEntropyLoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=lr)
     for epoch in range(epochs):
         optimizer.zero_grad()
-        rand_idx = random.randint(0, len(X) - 1)
-        x = X[rand_idx]
-        y_pred = model(x)
-        y_true = y[rand_idx]
-        loss = criterion(y_pred, y_true)
+        y_pred = model(X)
+        loss = criterion(y_pred, y)
         loss.backward()
         optimizer.step()
-        print(f"Epoch: {epoch}, Loss: {loss.item()}")
+        y_pred = torch.argmax(y_pred, dim=1).detach().numpy()
+        y_true = y.detach().numpy()
+        f1 = f1_score(y_true, y_pred, average='macro')
+        print(f"Epoch: {epoch}, Loss: {loss.item()}, F1 Score: {f1}")
     return model
 
 def load():
     data = load_data()
-    X: list[Dialog] = []
-    y: list[Label] = []
-    for dialog, label in data:
-        if len(dialog) == 0:
-            continue
-        X.append(dialog)
-        y.append(label)
+    dialogues = [dialogue for dialogue, _ in data]
+    X = []
+    for dialogue in dialogues:
+        dialogue_data = []
+        for text in dialogue:
+            _, embeddings = text
+            l_0, v = embeddings.shape
+            assert 0 < l_0 <= MICRO_SEQUENCE_LENGTH and v == VECTOR_SIZE
+            embeddings = np.vstack((np.zeros((MICRO_SEQUENCE_LENGTH - l_0, v)), embeddings))
+            dialogue_data.append(embeddings)
+        dialogue_data = np.array(dialogue_data)
+        L_0, l, v = dialogue_data.shape
+        assert 0 < L_0 <= MACRO_SEQUENCE_LENGTH and l == MICRO_SEQUENCE_LENGTH and v == VECTOR_SIZE
+        dialogue_data = np.vstack((np.zeros((MACRO_SEQUENCE_LENGTH - L_0, l, v)), dialogue_data))
+        X.append(dialogue_data)
+    X = torch.tensor(np.array(X), dtype=torch.float32)
+    y = torch.tensor([label for _, label in data]) + 1
     return X, y
 
 def main():
@@ -92,10 +121,10 @@ def main():
     print(f"Data loaded with size: {len(X)}")
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
     model = train(X_train, y_train)
-    y_pred = []
-    for x in X_test:
-        y_pred.append(model(x).detach().numpy().argmax() - 1)
-    print("F1 Score:", f1_score(y_test, y_pred, average='weighted'))
+    y_pred = np.argmax(model(X_test).detach().numpy(), axis=1)
+    y_test = y_test.detach().numpy()
+    print("F1 Score:", f1_score(y_test, y_pred, average='macro'))
+    torch.save(model.state_dict(), "models/lstm_advanced.pth")
 
 
 if __name__ == '__main__':

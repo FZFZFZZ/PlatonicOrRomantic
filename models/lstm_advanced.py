@@ -57,7 +57,7 @@ class LstmAdvanced(nn.Module):
         return self.large_output(large_lstm_output)  # size: (N, 3)
 
 
-def train(X: torch.Tensor, y: torch.Tensor, lr: float = 0.001, epochs: int = 100) -> nn.Module:
+def train(X: torch.Tensor, y: torch.Tensor, lr: float = 0.0001, epochs: int = 500) -> nn.Module:
     """
     Parameters
     ---

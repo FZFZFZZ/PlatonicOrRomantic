@@ -13,14 +13,14 @@ dotenv.load_dotenv()
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
-CHATTER_A = "Romantic"
+CHATTER_A = "Platonic"
 CHATTER_B = "Romantic"
 
-GENDER_A = "girl"
+GENDER_A = "boy"
 GENDER_B = "girl"
 
 # SEED = 7659098
-MAX_GENERATION = 29
+MAX_GENERATION = 400
 MAX_CHAT_ROUND = 15
 
 DATA_PATH = "Data/train.csv"

@@ -15,9 +15,10 @@ def get_embeddings(file: str) -> dict:
     embeddings = {}
     with open(file, 'r', encoding='utf-8') as f:
         for line in f:
-            values = line.split()
+            values = line.split(" ")
             word = values[0]
-            vector = np.asarray(values[1:], "float32")
+            arr = [float(item) if item != "." else 0.0 for item in values[1:]]
+            vector = np.array(arr)
             embeddings[word] = vector
     return embeddings
 

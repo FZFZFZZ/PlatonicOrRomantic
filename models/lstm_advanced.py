@@ -126,10 +126,11 @@ def load(file: str):
     return X, y, vector_size
 
 def main():
-    if len(sys.argv) < 2:
-        print("Usage: python -m models.lstm_advanced <file>")
+    if len(sys.argv) < 3:
+        print("Usage: python -m models.lstm_advanced <feature file> <output file>")
         exit(1)
     file = sys.argv[1]
+    out = sys.argv[2]
     torch.manual_seed(42)
     X, y, vector_size = load(file)
     print(f"Data loaded with size: {len(X)}")
@@ -138,7 +139,7 @@ def main():
     y_pred = np.argmax(model(X_test).detach().numpy(), axis=1)
     y_test = y_test.detach().numpy()
     print("F1 Score:", f1_score(y_test, y_pred, average='macro'))
-    torch.save(model.state_dict(), "models/lstm_advanced.pth")
+    torch.save(model.state_dict(), out)
 
 
 if __name__ == '__main__':

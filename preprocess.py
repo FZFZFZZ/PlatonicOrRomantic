@@ -4,6 +4,7 @@ import numpy as np
 import spacy
 from typing import Literal
 import pickle
+import sys
 
 Role = Literal[-1, 1]
 Text = tuple[Role, np.ndarray]  # array shape: (L, V) where L is number of tokens, V is vector size (currently 50)
@@ -20,7 +21,7 @@ def get_embeddings(file: str) -> dict:
             embeddings[word] = vector
     return embeddings
 
-def preprocess_data(file: str = "Data/train.csv", embeddings_file: str = "vectors/glove.6B.50d.txt") -> list[tuple[Dialog, Label]]:
+def preprocess_data(embeddings_file: str, out: str, file: str = "Data/train.csv") -> list[tuple[Dialog, Label]]:
     embeddings = get_embeddings(embeddings_file)
     print("Embeddings loaded with size:", len(embeddings))
     nlp = spacy.load("en_core_web_sm")
@@ -50,15 +51,22 @@ def preprocess_data(file: str = "Data/train.csv", embeddings_file: str = "vector
             dialogue_data.append((role, embeddings_data))
         if len(dialogue_data) > 0:
             data.append((dialogue_data, label))
-    with open("features.pkl", "wb") as f:
+    with open(out, "wb") as f:
         pickle.dump(data, f)
     return data
 
-def load_data(file: str = "features.pkl") -> list[tuple[Dialog, Label]]:
+def load_data(file: str) -> list[tuple[Dialog, Label]]:
     with open(file, "rb") as f:
         data = pickle.load(f)
     return data
 
+def main():
+    if len(sys.argv) < 3:
+        print("Usage: python -m preprocess <embeddings file> <output file>")
+        exit(1)
+    embeddings = sys.argv[1]
+    out = sys.argv[2]
+    preprocess_data(embeddings, out)
 
 if __name__ == '__main__':
-    preprocess_data()
+    main()

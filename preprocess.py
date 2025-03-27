@@ -56,10 +56,23 @@ def preprocess_data(embeddings_file: str, out: str, file: str = "Data/train.csv"
         pickle.dump(data, f)
     return data
 
-def load_data(file: str) -> list[tuple[Dialog, Label]]:
+def load_data(file: str) -> tuple[list[tuple[Dialog, Label]], int]:
+    """
+    Paremeters
+    ---
+    file: str
+        The file to load the data from.
+    
+    Returns
+    ---
+    tuple[list[tuple[Dialog, Label]], int]
+        The data and the size of each word vector.
+        Size of each word vector is inferred from the file name.
+    """
     with open(file, "rb") as f:
         data = pickle.load(f)
-    return data
+    size = int(file.split(".")[-2][:-1])
+    return data, size
 
 def main():
     if len(sys.argv) < 3:

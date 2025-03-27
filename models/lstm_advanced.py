@@ -4,7 +4,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import f1_score
 import numpy as np
 
-from preprocess import load_data, Dialog, Label
+from preprocess import load_data
 
 VECTOR_SIZE = 50
 MICRO_SEQUENCE_LENGTH = 40
@@ -57,7 +57,12 @@ class LstmAdvanced(nn.Module):
         return self.large_output(large_lstm_output)  # size: (N, 3)
 
 
-def train(X: torch.Tensor, y: torch.Tensor, lr: float = 0.0001, epochs: int = 500) -> nn.Module:
+def train(X: torch.Tensor,
+          y: torch.Tensor,
+          lr: float = 0.0001,
+          epochs: int = 500,
+          sample_size: int = 300,
+          ) -> nn.Module:
     """
     Parameters
     ---
@@ -84,13 +89,16 @@ def train(X: torch.Tensor, y: torch.Tensor, lr: float = 0.0001, epochs: int = 50
     criterion = nn.CrossEntropyLoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=lr)
     for epoch in range(epochs):
+        idx = np.random.choice(len(X), sample_size, replace=False)
+        X_sample = X[idx]
+        y_sample = y[idx]
         optimizer.zero_grad()
-        y_pred = model(X)
-        loss = criterion(y_pred, y)
+        y_pred = model(X_sample)
+        loss = criterion(y_pred, y_sample)
         loss.backward()
         optimizer.step()
         y_pred = torch.argmax(y_pred, dim=1).detach().numpy()
-        y_true = y.detach().numpy()
+        y_true = y_sample.detach().numpy()
         f1 = f1_score(y_true, y_pred, average='macro')
         print(f"Epoch: {epoch}, Loss: {loss.item()}, F1 Score: {f1}")
     return model

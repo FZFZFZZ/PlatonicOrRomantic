@@ -1,14 +1,18 @@
 import torch
 from torch import nn
+import numpy as np
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import f1_score
-import numpy as np
 import sys
 
 from preprocess import load_data
 
-MICRO_SEQUENCE_LENGTH = 40
+# Length 40 for 6b.50d and 6b.100d, Length 50 for the rest of glove
+MICRO_SEQUENCE_LENGTH = 50
 MACRO_SEQUENCE_LENGTH = 25
+
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+print(f"Using device: {device}")
 
 class LstmAdvanced(nn.Module):
     def __init__(self,
@@ -86,20 +90,21 @@ def train(X: torch.Tensor,
     nn.Module
         The trained model.
     """
-    model = LstmAdvanced(vector_size)
+    model = LstmAdvanced(vector_size).to(device)
     criterion = nn.CrossEntropyLoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=lr)
     for epoch in range(epochs):
         idx = np.random.choice(len(X), sample_size, replace=False)
-        X_sample = X[idx]
-        y_sample = y[idx]
+        X_sample = X[idx].to(device)
+        y_sample = y[idx].to(device)
         optimizer.zero_grad()
         y_pred = model(X_sample)
         loss = criterion(y_pred, y_sample)
         loss.backward()
         optimizer.step()
-        y_pred = torch.argmax(y_pred, dim=1).detach().numpy()
-        y_true = y_sample.detach().numpy()
+
+        y_pred = torch.argmax(y_pred, dim=1).cpu().detach().numpy()
+        y_true = y_sample.cpu().detach().numpy()
         f1 = f1_score(y_true, y_pred, average='macro')
         print(f"Epoch: {epoch}, Loss: {loss.item()}, F1 Score: {f1}")
     return model
@@ -136,7 +141,7 @@ def main():
     print(f"Data loaded with size: {len(X)}")
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
     model = train(X_train, y_train, vector_size)
-    y_pred = np.argmax(model(X_test).detach().numpy(), axis=1)
+    y_pred = np.argmax(model(X_test.to(device)).cpu().detach().numpy(), axis=1)
     y_test = y_test.detach().numpy()
     print("F1 Score:", f1_score(y_test, y_pred, average='macro'))
     torch.save(model.state_dict(), out)

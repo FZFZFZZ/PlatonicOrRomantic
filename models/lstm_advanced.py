@@ -66,7 +66,7 @@ def train(X: torch.Tensor,
           vector_size: int,
           lr: float = 0.0001,
           epochs: int = 500,
-          sample_size: int = 300,
+          sample_size: int = 600,
           ) -> nn.Module:
     """
     Parameters
@@ -91,6 +91,7 @@ def train(X: torch.Tensor,
         The trained model.
     """
     model = LstmAdvanced(vector_size).to(device)
+    model = nn.DataParallel(model)
     criterion = nn.CrossEntropyLoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=lr)
     for epoch in range(epochs):

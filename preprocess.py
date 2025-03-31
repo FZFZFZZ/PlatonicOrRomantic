@@ -36,9 +36,8 @@ def preprocess_data(embeddings_file: str, out: str, file: str = "Data/train.csv"
         dialogue_data: Dialog = []
         for text in dialogue:
             role = 1 if text['role'] == 'A' else -1
-            if text['response'] == '$S$':
+            if text['response'] == '$S$' or text['response'].strip() == '':
                 dialogue_data.append((role, None))
-            if text['response'].strip() == '':
                 continue
             if text['response'] == '$EXIT$':
                 break

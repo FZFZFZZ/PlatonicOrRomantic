@@ -1,5 +1,8 @@
 # Misc
+features/
+features-0/
 vectors/
+.DS_store
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

@@ -4,52 +4,84 @@ import numpy as np
 import spacy
 from typing import Literal
 import pickle
+import sys
 
-Text = tuple[Literal[-1, 1], np.ndarray]
+Role = Literal[-1, 1]
+# array shape: (L, V) where L is number of tokens, V is vector size (currently 50)
+# None means a long pause
+Text = tuple[Role, np.ndarray | None]
 Dialog = list[Text]
+Label = Literal[-1, 0, 1]
 
 def get_embeddings(file: str) -> dict:
     embeddings = {}
     with open(file, 'r', encoding='utf-8') as f:
         for line in f:
-            values = line.split()
+            values = line.split(" ")
             word = values[0]
-            vector = np.asarray(values[1:], "float32")
+            arr = [float(item) if item != "." else 0.0 for item in values[1:]]
+            vector = np.array(arr)
             embeddings[word] = vector
     return embeddings
 
-def preprocess_data(file: str = "Data/train.csv", embeddings_file: str = "vectors/glove.6B.50d.txt") -> list[Dialog]:
+def preprocess_data(embeddings_file: str, out: str, file: str = "Data/train.csv") -> list[tuple[Dialog, Label]]:
     embeddings = get_embeddings(embeddings_file)
     print("Embeddings loaded with size:", len(embeddings))
     nlp = spacy.load("en_core_web_sm")
     df = pd.read_csv(file)
-    data: list[Dialog] = []
+    data: list[tuple[Dialog, Label]] = []
     for row in df.iloc:
         dialogue = ast.literal_eval(row['Dialogue'])['text']
+        label = row['Label']
         dialogue_data: Dialog = []
         for text in dialogue:
-            if text['response'] == '$S$':
+            role = 1 if text['role'] == 'A' else -1
+            if text['response'] == '$S$' or text['response'].strip() == '':
+                dialogue_data.append((role, None))
                 continue
             if text['response'] == '$EXIT$':
                 break
-            role = 1 if text['role'] == 'A' else -1
             doc = nlp(text['response'])
             embeddings_data: list[np.ndarray] = []
             for token in doc:
                 if token.lemma_ in embeddings:
                     embeddings_data.append(embeddings[token.lemma_])
+            # This may cause issues because we are ignoring sentences only with emojis
+            if len(embeddings_data) == 0:
+                continue
             embeddings_data = np.array(embeddings_data)
             dialogue_data.append((role, embeddings_data))
-        data.append(dialogue_data)
-    with open("features.pkl", "wb") as f:
+        if len(dialogue_data) > 0:
+            data.append((dialogue_data, label))
+    with open(out, "wb") as f:
         pickle.dump(data, f)
     return data
 
-def load_data(file: str = "features.pkl") -> list[Dialog]:
+def load_data(file: str) -> tuple[list[tuple[Dialog, Label]], int]:
+    """
+    Paremeters
+    ---
+    file: str
+        The file to load the data from.
+    
+    Returns
+    ---
+    tuple[list[tuple[Dialog, Label]], int]
+        The data and the size of each word vector.
+        Size of each word vector is inferred from the file name.
+    """
     with open(file, "rb") as f:
         data = pickle.load(f)
-    return data
+    size = int(file.split(".")[-2][:-1])
+    return data, size
 
+def main():
+    if len(sys.argv) < 3:
+        print("Usage: python -m preprocess <embeddings file> <output file>")
+        exit(1)
+    embeddings = sys.argv[1]
+    out = sys.argv[2]
+    preprocess_data(embeddings, out)
 
 if __name__ == '__main__':
-    preprocess_data()
+    main()

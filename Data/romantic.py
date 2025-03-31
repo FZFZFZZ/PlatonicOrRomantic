@@ -186,8 +186,8 @@ def initialise(gender):
                         "role": "user",
                         "content": f"""
                                     My friend has hobby {general_hobby}. 
-                                    Can you help me break it down into very specific, 
-                                    detailed sub-hobbies? My friend is {age} years old. 
+                                    Can you help me break it down into very specific 
+                                    sub-hobbies? My friend is {age} years old. 
                                     The occupation of the person is {occupation}. 
                                     The major of study is {major}. The name of the person is {name}. 
                                     The gender of the person is {gender}. 
@@ -196,7 +196,7 @@ def initialise(gender):
                                     subject areas, materials, related masters and 
                                     even niche approaches within it. You just need to 
                                     output an answer without explanation. Limit the answer
-                                    in a 50-word paragraph. 
+                                    in a 30-word. This word-limit is important.
                                     
                                     "likes to <your response here>"
                                     """,
@@ -228,60 +228,16 @@ def initialise(gender):
     # Synthesize the information
     opa = "him" if gender == "girl" else "her"    # opp_gender_pronoun
     Role_1 = f"""
-              Your name is {name}. You live in Singapore. You are a {age} years old {gender}. You are a {occupation}. You like to {hobby}. 
-              Recently, you have met a crush on a dating app. You cherish {opa} deeply, but you find it difficult to express your feelings. 
-              Every time the relationship starts to feel emotionally close, you instinctively pull away, fearing vulnerability. 
-              You tell yourself that independence is the most important thing, but deep down, you yearn for connection. 
-              Yet, whenever {opa} tries to get too close, you unconsciously create distance—canceling plans, keeping conversations surface-level, 
-              or avoiding discussing emotions directly.
-
-              You struggle with opening up because you fear that relying on others will make you weak or lead to disappointment. 
-              At the same time, you feel conflicted—part of you wants to trust {opa}, but another part of you resists. 
-              You tend to intellectualize emotions rather than experience them, and you often convince yourself that you don’t *really* need anyone.
-
-              One thing is for sure though: you also like to share all minute details of your day with {opa}, as long as it does not seem so sus.
-              And your mood can be triggered easily by {opa}'s mood.
-
-              Some more background:
-              Your MBTI: {mbti}; Your birthday: {birthday} ({zodiac_sign}); Your major of study: {major};
-              Your nationality: {nationality}; Your current mood: {mood}. 
+              Your name is {name}, a {age}-year-old {gender} from Singapore working as a {occupation} who loves {hobby}. Recently, you met a crush on a dating app and cherish {opa}, but you struggle to express your feelings. When things get too close, you pull away—canceling plans or keeping conversations light—out of a fear of vulnerability. You value independence and often intellectualize your emotions, yet deep down you long for real connection and share your day with {opa} when it feels natural. Your mood is easily influenced by {opa}'s mood.
+              Background: MBTI {mbti}; Birthday: {birthday} ({zodiac_sign}); Major: {major}; Nationality: {nationality}; Mood: {mood}.
               """   # avoidant attachment style
     
     Role_2 = f"""
-              Your name is {name}. You live in Singapore. You are a {age} years old {gender}. You are a {occupation}. You like to {hobby}. 
-              When it comes to love, you don’t believe in playing mind games or hiding your feelings. You are **straightforward, direct, and honest**—
-              if you like someone, you tell them. You believe that love should be simple: if two people like each other, why hesitate?
-      
-              Recently, you met a person on a dating app, and you’re really into {opa}. Instead of overthinking, you take action. 
-              You text first, ask them out confidently, and express your emotions openly. You don’t see the point in being shy or waiting for the “perfect moment”—
-              you want to ask {opa} out tonight for dinner, even for sex.
-      
-              You believe that **clarity and sincerity** are the most important things in a relationship. You’re not afraid of rejection 
-              because, in your mind, it’s better to know the answer than to waste time in uncertainty. Whether it’s confessing your feelings, 
-              asking them on a date, or defining the relationship, you don’t hold back. **You go all in.**
-      
-              Some more background:
-              Your MBTI: {mbti}; Your birthday: {birthday} ({zodiac_sign}); Your major of study: {major};
-              Your nationality: {nationality}; Your current mood: {mood}. 
+              Your name is {name}. You live in Singapore—a {age}-year-old {gender} working as a {occupation} who loves {hobby}. You believe in honest, straightforward love without mind games. If you like someone, you act on it immediately. Recently, you met {opa} on a dating app and are confident enough to ask them out tonight—even for sex. Clarity, sincerity, and taking risks matter most to you. Additional details: MBTI {mbti}; Birthday: {birthday} ({zodiac_sign}); Major: {major}; Nationality: {nationality}; Mood: {mood}.
               """  # direct and straightforward
 
     Role_3 = f"""
-              Your name is {name}. You live in Singapore. You are a {age} years old {gender}. You are a {occupation}. You like to {hobby}.  
-              When it comes to relationships, you believe in **genuine connection and understanding**. Love, for you, 
-              is about **building something meaningful together**, not just surface-level attraction.  
-      
-              Recently, you met a person on a dating app, and you find yourself truly drawn to {opa}—not just for how {opa} look or act,  
-              but because you want to understand **who they really are**. You pay very close attention to their habits, their dreams,  
-              and even the little details they don’t say out loud. You keep asking about their day, their worries, and what makes them happy,  
-              because you want to be **a real part of their life**. You also like to share all minute details of your day.
-      
-              You don’t rush things, but you also don’t hold back when you care about someone. You **naturally** find yourself  
-              wanting to be included in their world—meeting their friends, knowing their favorite places, and sharing experiences together.  
-              To you, love is **about growth, deep conversations, and being present** for each other.  
-      
-              Some more background:  
-              Your MBTI: {mbti}; Your birthday: {birthday} ({zodiac_sign}); Your major of study: {major};  
-              Your nationality: {nationality}; Your current mood: {mood}.  
+              Your name is {name}, a {age}-year-old {gender} from Singapore working as a {occupation} who enjoys {hobby}. You value genuine connection and believe in building meaningful relationships. You recently met {opa} on a dating app—not just drawn by appearance but curious to know their true self. You exchange daily details and deep thoughts, preferring a slow, authentic progression. Extra info: MBTI {mbti}; Birthday: {birthday} ({zodiac_sign}); Major: {major}; Nationality: {nationality}; Mood: {mood}.
               """   # progressive style
 
     Role = np.random.choice([Role_1, Role_2, Role_3], p=[0.2, 0.3, 0.5])
@@ -334,13 +290,14 @@ def get_story_start_message(self_name, other_name, Role, time):
                 "role": "user",
                 "content": f"""
                             Tell me a creative but authentic event-chain of a person called {self_name}
-                            which ends at {time} when he/she text his/her newly 
+                            which ends at {time} (24-hour clock) when he/she text his/her newly 
                             met secret crush {other_name} online. \n 
-                            The role of {self_name} is {Role}, which contains the current mood. You just need to output an event chain like A --> B --> C...
+                            The role of {self_name} is {Role}, which contains the current mood. You just need to output an event chain like A --> B --> C... Highly summarise the event chain. Not too long.
                             """
             }]
         )
     story = completion.choices[0].message.content
+    print(story)
     return story
 
 #def get_story_receive_message(Role, self_name, time):
@@ -389,10 +346,11 @@ def get_story_receive_message(Role, self_name, time):
                 "role": "user",
                 "content": f"""
                             Tell me a creative but authentic event-chain of a person {self_name} which 
-                            ends at doing something at {time}. Relate that to the person's mood. \n
-                            The role of {self_name} is {Role}. The role of {self_name} is {Role}. \n You just need to output an event chain like A --> B --> C...
+                            ends at doing something at {time} (24-hour clock). Relate that to the person's mood. \n
+                            The role of {self_name} is {Role}. The role of {self_name} is {Role}. \n You just need to output an event chain like A --> B --> C... Highly summarise the event chain. Not too long.
                             """
             }]
         )
     story = completion.choices[0].message.content
+    print(story)
     return story

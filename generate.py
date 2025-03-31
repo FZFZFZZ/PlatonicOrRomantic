@@ -13,15 +13,15 @@ dotenv.load_dotenv()
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
-CHATTER_A = "Romantic"
-CHATTER_B = "Romantic"
+CHATTER_A = "Platonic"
+CHATTER_B = "Platonic"
 
 GENDER_A = "boy"
-GENDER_B = "girl"
+GENDER_B = "boy"
 
 # SEED = 7659098
-MAX_GENERATION = 20
-MAX_CHAT_ROUND = 20
+MAX_GENERATION = 183
+MAX_CHAT_ROUND = 15
 
 DATA_PATH = "Data/train.csv"
 
@@ -65,7 +65,7 @@ def main():
     i = 0
     while i < MAX_GENERATION:
         try:
-            logging.info(f"Generation {i}")
+            logging.info(f"\n\n\nGeneration {i}\n\n\n")
 
             # initialise empty dialogue dict and empty other's info
             logging.info("Initialising dialogue and other's info")
@@ -141,7 +141,7 @@ def main():
             # Prefill Other's info
             logging.info("Prefilling other's info")
             completion = client.chat.completions.create(
-                    model=MODEL,
+                    model=CHEAP_MODEL,
                     messages=[{
                         "role": "user",
                         "content": f"""I have the following dictionary template for storing inferred information about Person B:\n {B_info_for_A_to_infer} \n
@@ -155,7 +155,7 @@ def main():
             result_dict = json.loads(output)
             B_info_for_A_to_infer.update(result_dict)
             completion = client.chat.completions.create(
-                    model=MODEL,
+                    model=CHEAP_MODEL,
                     messages=[{
                         "role": "user",
                         "content": f"""I have the following dictionary template for storing inferred information about Person A:\n {A_info_for_B_to_infer} \n
@@ -205,9 +205,14 @@ def main():
                 curr_event_chain = event_chain_A if curr == "A" else event_chain_B
                 curr_info_to_infer = A_info_for_B_to_infer if curr == "B" else B_info_for_A_to_infer
                 dialogue["text"].append({"role": curr, "response": ""})
-                p = ("<Role>" + curr_role + "/<Role>\n" + "<event>" + curr_event_chain + "/<event>\n" + 
-                     "<dialogue>" + json.dumps(dialogue) + "</dialogue>\n"
-                     + "<other's info>" + json.dumps(curr_info_to_infer) + "</other's info>")
+                if chat_round > 6:
+                    p = ("<Role>" + curr_role + "/<Role>\n" + 
+                         "<dialogue>" + json.dumps(dialogue) + "</dialogue>\n"
+                         + "<other's info>" + json.dumps(curr_info_to_infer) + "</other's info>")
+                else:
+                    p = ("<Role>" + curr_role + "/<Role>\n" + "<event>" + curr_event_chain + "/<event>\n" + 
+                         "<dialogue>" + json.dumps(dialogue) + "</dialogue>\n"
+                         + "<other's info>" + json.dumps(curr_info_to_infer) + "</other's info>")
                 
                 k=0
                 while k < 10:
@@ -218,7 +223,7 @@ def main():
                                 {"role": "developer", "content": task_p + "\n" + format_p},
                                 {"role": "user", "content": p}
                             ],
-                            temperature=1.3
+                            temperature=1.2
                         )
                         response = completion.choices[0].message.content
                         response = clean(response)
@@ -241,40 +246,41 @@ def main():
                     break
                 
                 # update other's info
-                try:
-                    if curr == "A":
-                        p_update_other = "<dialogue>" + json.dumps(dialogue) + "</dialogue>\n" + "<other's info>" + json.dumps(B_info_for_A_to_infer) + "</other's info>"
-                        completion = client.chat.completions.create(
-                            model=MODEL,
-                            messages=[
-                            {"role": "developer", "content": "Given a dialogue <dialogue> containing B's message, update the dictionary template  <other's info> </other's info> for storing inferred information about Person B based on the dialogue. You can leave one empty or unchanged. But try your best to infer the 'intention', if there is such key. Your output must follow the template exactly without any changes in structure or additional keys. Output a JSON object."},
-                            {
-                                "role": "user",
-                                "content": p_update_other
-                            }],
-                            temperature=0.7
-                        )
-                        response = completion.choices[0].message.content
-                        response = clean(response)
-                        B_info_for_A_to_infer = json.loads(response)
-                    else:
-                        p_update_other = "<dialogue>" + json.dumps(dialogue) + "</dialogue>\n" + "<other's info>" + json.dumps(A_info_for_B_to_infer) + "</other's info>"
-                        completion = client.chat.completions.create(
-                            model=MODEL,
-                            messages=[
-                            {"role": "developer", "content": "Given a dialogue <dialogue> containing A's message, update the dictionary template <other's info> </other's info> for storing inferred information about Person A based on the dialogue. You can leave one empty or unchanged. But try your best to infer the 'intention', if there is such key. Your output must follow the template exactly without any changes in structure or additional keys. Output a JSON object."},
-                            {
-                                "role": "user",
-                                "content": p_update_other
-                            }],
-                            temperature=0.7
-                        )
-                        response = completion.choices[0].message.content
-                        response = clean(response)
-                        A_info_for_B_to_infer = json.loads(response)
-                except Exception as e:
-                    logging.info("Fail to update. Continue")
-                    continue
+                if chat_round % 5 == 0:
+                    try:
+                        if curr == "A":
+                            p_update_other = "<dialogue>" + json.dumps(dialogue) + "</dialogue>\n" + "<other's info>" + json.dumps(B_info_for_A_to_infer) + "</other's info>"
+                            completion = client.chat.completions.create(
+                                model=CHEAP_MODEL,
+                                messages=[
+                                {"role": "developer", "content": "Given a dialogue <dialogue> containing B's message, update the dictionary template  <other's info> </other's info> for storing inferred information about Person B based on the dialogue. You can leave one empty or unchanged. But try your best to infer the 'intention', if there is such key. Your output must follow the template exactly without any changes in structure or additional keys. Use simple words and less words.Output a JSON object."},
+                                {
+                                    "role": "user",
+                                    "content": p_update_other
+                                }],
+                                temperature=0.3
+                            )
+                            response = completion.choices[0].message.content
+                            response = clean(response)
+                            B_info_for_A_to_infer = json.loads(response)
+                        else:
+                            p_update_other = "<dialogue>" + json.dumps(dialogue) + "</dialogue>\n" + "<other's info>" + json.dumps(A_info_for_B_to_infer) + "</other's info>"
+                            completion = client.chat.completions.create(
+                                model=CHEAP_MODEL,
+                                messages=[
+                                {"role": "developer", "content": "Given a dialogue <dialogue> containing A's message, update the dictionary template <other's info> </other's info> for storing inferred information about Person A based on the dialogue. You can leave one empty or unchanged. But try your best to infer the 'intention', if there is such key. Your output must follow the template exactly without any changes in structure or additional keys. Use simple words and less words. Output a JSON object."},
+                                {
+                                    "role": "user",
+                                    "content": p_update_other
+                                }],
+                                temperature=0.3
+                            )
+                            response = completion.choices[0].message.content
+                            response = clean(response)
+                            A_info_for_B_to_infer = json.loads(response)
+                    except Exception as e:
+                        logging.info("Fail to update. Continue")
+                        continue
 
                 # switch role
                 curr = "A" if curr == "B" else "B"
@@ -296,7 +302,7 @@ def main():
             new_instance.to_csv(DATA_PATH, mode='a', header=False, index=False)
 
             # occasionally print out the dialogue
-            if i % 1 == 0:
+            if i % 10 == 0:
                 logging.info(f"Dialogue: \n{dialogue}")
             i += 1
         except Exception as e:

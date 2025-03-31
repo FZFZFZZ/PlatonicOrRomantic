@@ -33,5 +33,22 @@ def preprocess_data(out: str = "features-0/bert.pkl", file: str = "Data/train.cs
         pickle.dump(data, f)
     return data
 
+def load_data(file: str) -> tuple[list[tuple[Dialog, Label]], int]:
+    """
+    Parameters
+    ---
+    file: str
+        The file to load the data from.
+
+    Returns
+    ---
+    tuple[list[tuple[Dialog, Label]], int]
+        The data and the size of one word vector.
+        Size of one word vector is by default 768
+    """
+    with open(file, "rb") as f:
+        data = pickle.load(f)
+    return data, 768
+
 if __name__ == '__main__':
     preprocess_data()

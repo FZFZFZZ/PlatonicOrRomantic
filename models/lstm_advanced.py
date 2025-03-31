@@ -9,7 +9,7 @@ from preprocess import load_data as load_glove_data
 from preprocess_bert import load_data as load_bert_data
 
 # Length 40 for 6b.50d and 6b.100d, Length 50 for the rest of glove
-MICRO_SEQUENCE_LENGTH = 50
+MICRO_SEQUENCE_LENGTH = 75
 MACRO_SEQUENCE_LENGTH = 25
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -112,8 +112,7 @@ def train(X: torch.Tensor,
     return model
 
 def load(file: str):
-    indicator = file.split(".")[-2]
-    if indicator == "bert":
+    if file.endswith("bert.pkl"):
         data, vector_size = load_bert_data(file)
     else:
         data, vector_size = load_glove_data(file)

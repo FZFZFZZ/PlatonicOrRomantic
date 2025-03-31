@@ -66,7 +66,7 @@ def train(X: torch.Tensor,
           vector_size: int,
           lr: float = 0.0001,
           epochs: int = 500,
-          sample_size: int = 600,
+          sample_size: int = 300,
           ) -> nn.Module:
     """
     Parameters

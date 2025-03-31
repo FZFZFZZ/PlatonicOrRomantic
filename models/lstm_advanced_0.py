@@ -4,14 +4,19 @@ import sys
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import f1_score
 
-from preprocess import load_data
+from preprocess import load_data as load_glove_data
+from preprocess_bert import load_data as load_bert_data
 from .lstm_advanced import train, device
 
 MICRO_SEQUENCE_LENGTH = 50
 MACRO_SEQUENCE_LENGTH = 35
 
 def load(file: str):
-    data, vector_size = load_data(file)
+    indicator = file.split(".")[-2]
+    if indicator == "bert":
+        data, vector_size = load_bert_data(file)
+    else:
+        data, vector_size = load_glove_data(file)
     dialogues = [dialogue for dialogue, _ in data]
     X = []
     for dialogue in dialogues:

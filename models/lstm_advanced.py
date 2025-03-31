@@ -5,7 +5,8 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import f1_score
 import sys
 
-from preprocess import load_data
+from preprocess import load_data as load_glove_data
+from preprocess_bert import load_data as load_bert_data
 
 # Length 40 for 6b.50d and 6b.100d, Length 50 for the rest of glove
 MICRO_SEQUENCE_LENGTH = 50
@@ -111,7 +112,11 @@ def train(X: torch.Tensor,
     return model
 
 def load(file: str):
-    data, vector_size = load_data(file)
+    indicator = file.split(".")[-2]
+    if indicator == "bert":
+        data, vector_size = load_bert_data(file)
+    else:
+        data, vector_size = load_glove_data(file)
     dialogues = [dialogue for dialogue, _ in data]
     X = []
     for dialogue in dialogues:

@@ -6,56 +6,29 @@ from transformers import BertTokenizer, BertModel
 
 from preprocess import Role, Text, Dialog, Label
 
-def preprocess_data(out: str = "features/bert.pkl", file: str = "Data/train.csv") -> list[tuple[Dialog, Label]]:
+def preprocess_data(out: str = "features-0/bert.pkl", file: str = "Data/train.csv") -> list[tuple[Dialog, Label]]:
+    tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
+    model = BertModel.from_pretrained('bert-base-uncased')
     df = pd.read_csv(file)
-    all_texts: list[str] = []
-    all_roles: list[list[Role]] = []
-    labels: list[Label] = []
+    data: list[tuple[Dialog, Label]] = []
     for row in df.iloc:
         dialogue = ast.literal_eval(row['Dialogue'])['text']
-        texts: list[str] = []
-        roles: list[Role] = []
+        label = row['Label']
+        dialogue_data: Dialog = []
         for text in dialogue:
-            if text['response'] == '$S$':
-                continue
-            if text['response'].strip() == '':
+            role = 1 if text['role'] == 'A' else -1
+            if text['response'] == '$S$' or text['response'].strip() == '':
+                dialogue_data.append((role, None))
                 continue
             if text['response'] == '$EXIT$':
                 break
-            texts.append(text['response'])
-            role = 1 if text['role'] == 'A' else -1
-            roles.append(role)
-        if len(texts) == 0:
-            continue
-        all_texts.extend(texts)
-        all_roles.append(roles)
-        labels.append(row['Label'])
-    print("All texts loaded,", len(labels))
-    
-    tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
-    model = BertModel.from_pretrained('bert-base-uncased')
-    encoding = tokenizer.batch_encode_plus(
-        all_texts,
-        add_special_tokens=True,
-        padding=True,
-        return_tensors='pt',
-    )
-    with torch.no_grad():
-        outputs = model(**encoding)
-    embeddings = outputs.last_hidden_state.numpy()
-    print("Embeddings calculated,", embeddings.shape)
-    assert len(embeddings) == len(all_texts)
-    data: list[tuple[Dialog, Label]] = []
-    idx = 0
-    for roles, label in zip(all_roles, labels):
-        texts: list[Text] = []
-        for role in roles:
-            texts.append((role, embeddings[idx]))
-            idx += 1
-        data.append((texts, label))
-    print("Done,", len(data))
-    assert idx == len(embeddings)
-
+            encoding = tokenizer(text['response'], return_tensors='pt')
+            with torch.no_grad():
+                outputs = model(**encoding)
+            embeddings_data = outputs.last_hidden_state[0].detach().numpy()
+            dialogue_data.append((role, embeddings_data))
+        if len(dialogue_data) > 0:
+            data.append((dialogue_data, label))
     with open(out, "wb") as f:
         pickle.dump(data, f)
     return data

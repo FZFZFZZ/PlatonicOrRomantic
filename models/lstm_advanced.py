@@ -9,7 +9,8 @@ from preprocess import load_data as load_glove_data
 from preprocess_bert import load_data as load_bert_data
 
 # Length 40 for 6b.50d and 6b.100d, Length 50 for the rest of glove
-MICRO_SEQUENCE_LENGTH = 75
+# Length 75 for bert
+MICRO_SEQUENCE_LENGTH = 50
 MACRO_SEQUENCE_LENGTH = 25
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")

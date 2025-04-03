@@ -9,7 +9,8 @@ from preprocess_bert import load_data as load_bert_data
 from .lstm_advanced import train, device
 
 # Length 50 for glove
-MICRO_SEQUENCE_LENGTH = 75
+# Length 75 for bert
+MICRO_SEQUENCE_LENGTH = 50
 MACRO_SEQUENCE_LENGTH = 35
 
 def load(file: str):

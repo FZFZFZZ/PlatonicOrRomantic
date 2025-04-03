@@ -5,10 +5,11 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import f1_score
 import sys
 
-from preprocess import load_data
+from preprocess import load_data as load_glove_data
+from preprocess_bert import load_data as load_bert_data
 
 # Length 40 for 6b.50d and 6b.100d, Length 50 for the rest of glove
-MICRO_SEQUENCE_LENGTH = 50
+MICRO_SEQUENCE_LENGTH = 75
 MACRO_SEQUENCE_LENGTH = 25
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -111,7 +112,10 @@ def train(X: torch.Tensor,
     return model
 
 def load(file: str):
-    data, vector_size = load_data(file)
+    if file.endswith("bert.pkl"):
+        data, vector_size = load_bert_data(file)
+    else:
+        data, vector_size = load_glove_data(file)
     dialogues = [dialogue for dialogue, _ in data]
     X = []
     for dialogue in dialogues:
@@ -142,7 +146,8 @@ def main():
     print(f"Data loaded with size: {len(X)}")
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
     model = train(X_train, y_train, vector_size)
-    y_pred = np.argmax(model(X_test.to(device)).cpu().detach().numpy(), axis=1)
+    with torch.no_grad():
+        y_pred = np.argmax(model(X_test.to(device)).cpu().detach().numpy(), axis=1)
     y_test = y_test.detach().numpy()
     print("F1 Score:", f1_score(y_test, y_pred, average='macro'))
     torch.save(model.state_dict(), out)

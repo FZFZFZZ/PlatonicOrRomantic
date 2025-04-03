@@ -50,7 +50,8 @@ def main():
     print(f"Data loaded with size: {len(X)}")
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
     model = train(X_train, y_train, vector_size)
-    y_pred = np.argmax(model(X_test.to(device)).cpu().detach().numpy(), axis=1)
+    with torch.no_grad():
+        y_pred = np.argmax(model(X_test.to(device)).cpu().detach().numpy(), axis=1)
     y_test = y_test.detach().numpy()
     print("F1 Score:", f1_score(y_test, y_pred, average='macro'))
     torch.save(model.state_dict(), out)

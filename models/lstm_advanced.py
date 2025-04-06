@@ -118,6 +118,7 @@ def load(file: str):
     else:
         data, vector_size = load_glove_data(file)
     dialogues = [dialogue for dialogue, _ in data]
+    print(dialogues[0][2])
     X = []
     for dialogue in dialogues:
         dialogue_data = []

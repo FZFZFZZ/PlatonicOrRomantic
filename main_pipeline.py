@@ -1,3 +1,4 @@
+import sys
 import pickle
 import numpy as np
 from sklearn.ensemble import RandomForestClassifier
@@ -5,18 +6,18 @@ from sklearn.metrics import f1_score, accuracy_score
 from interpret.blackbox import LimeTabular
 from interpret import show
 from preprocess import preprocess_data
+from sklearn.model_selection import train_test_split
+from imblearn.over_sampling import RandomOverSampler
 
-#Step 1: preprocess
-embeddings_file = "glove.6B.50d.txt"
-output_pkl = "data.50d.pkl"
-preprocess_data(embeddings_file, output_pkl, file="Data/train.csv")
+# Step 1: Data Preprocessing
+def preprocess_data_pipeline(embeddings_file, output_pkl, train_file):
+    preprocess_data(embeddings_file, output_pkl, file=train_file)
+    with open(output_pkl, "rb") as f:
+        data = pickle.load(f)
+    return data
 
-# Step 2: load data
-with open("data.50d.pkl", "rb") as f:
-    data = pickle.load(f)
-
-# Step 3: dialog -> vectors
-def extract_features(data: list[tuple[list[tuple[int, np.ndarray | None]], int]]) -> tuple[np.ndarray, np.ndarray]:
+# Step 2: Extract Features from Data
+def extract_features(data):
     X, y = [], []
     for dialog, label in data:
         vectors = []
@@ -30,24 +31,67 @@ def extract_features(data: list[tuple[list[tuple[int, np.ndarray | None]], int]]
         y.append(label)
     return np.array(X), np.array(y)
 
-X, y = extract_features(data)
+# Step 3: Split Data and Oversample (if needed)
+def prepare_data(X, y):
+    # Split the data into training and testing sets
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-# Step 4: use dataloader!!
-dl = DataLoader()
-dl.X, dl.y = X, y
-X_train, X_test, y_train, y_test = dl.get_data_split()
-X_train, y_train = dl.oversample(X_train, y_train)
+    # Oversample the training set if needed (to handle class imbalance)
+    oversampler = RandomOverSampler(random_state=42)
+    X_train, y_train = oversampler.fit_resample(X_train, y_train)
 
-# Step 5: Train
-rf = RandomForestClassifier()
-rf.fit(X_train, y_train)
-y_pred = rf.predict(X_test)
+    return X_train, X_test, y_train, y_test
 
-# Step 6: Evaluate
-print(f"F1 Score: {f1_score(y_test, y_pred, average='macro')}")
-print(f"Accuracy: {accuracy_score(y_test, y_pred)}")
+# Step 4: Train a RandomForest model
+def train_random_forest(X_train, y_train):
+    rf = RandomForestClassifier()
+    rf.fit(X_train, y_train)
+    return rf
 
-# Step 7: LIME
-lime = LimeTabular(predict_fn=rf.predict_proba, data=X_train, random_state=1)
-lime_local = lime.explain_local(X_test[-20:], y_test[-20:], name='LIME')
-show(lime_local)
+# Step 5: Evaluate the Model
+def evaluate_model(rf, X_test, y_test):
+    y_pred = rf.predict(X_test)
+    f1 = f1_score(y_test, y_pred, average='macro')
+    accuracy = accuracy_score(y_test, y_pred)
+    print(f"F1 Score: {f1}")
+    print(f"Accuracy: {accuracy}")
+    return f1, accuracy
+
+# Step 6: Explain the model with LIME
+def lime_explanation(rf, X_train, X_test, y_test, num_instances=20):
+    lime = LimeTabular(predict_fn=rf.predict_proba, data=X_train, random_state=1)
+    lime_local = lime.explain_local(X_test[-num_instances:], y_test[-num_instances:], name='LIME Explanation')
+    show(lime_local)
+
+# Main Pipeline Function
+def main_pipeline(embeddings_file, train_file, output_pkl, num_instances=20):
+    # Step 1: Preprocess the Data
+    data = preprocess_data_pipeline(embeddings_file, output_pkl, train_file)
+
+    # Step 2: Extract Features
+    X, y = extract_features(data)
+
+    # Step 3: Prepare Data (train-test split, oversampling)
+    X_train, X_test, y_train, y_test = prepare_data(X, y)
+
+    # Step 4: Train RandomForest Classifier
+    rf = train_random_forest(X_train, y_train)
+
+    # Step 5: Evaluate the Model
+    f1, accuracy = evaluate_model(rf, X_test, y_test)
+
+    # Step 6: Explain the Model with LIME
+    lime_explanation(rf, X_train, X_test, y_test, num_instances)
+
+# Main entry point for the script
+if __name__ == '__main__':
+    if len(sys.argv) < 5:
+        print("Usage: python mainpipeline.py <embeddings file> <train file> <output pkl file> <num_instances>")
+        sys.exit(1)
+
+    embeddings_file = sys.argv[1]
+    train_file = sys.argv[2]
+    output_pkl = sys.argv[3]
+    num_instances = int(sys.argv[4])
+
+    main_pipeline(embeddings_file, train_file, output_pkl, num_instances)

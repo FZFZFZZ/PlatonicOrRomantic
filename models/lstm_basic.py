@@ -4,6 +4,7 @@ import numpy as np
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import f1_score
 import sys
+import pickle
 
 from .lstm_advanced import load, device
 
@@ -94,6 +95,14 @@ def main():
     out = sys.argv[2]
     torch.manual_seed(42)
     np.random.seed(42)
+
+
+    # def load_pickle(filepath):
+    #     with open(filepath, "rb") as f:
+    #         return pickle.load(f)
+    #     
+    # data = load_pickle(file)
+    # print(data)
     X, y, vector_size = load(file)
     print(f"Data loaded with size: {len(X)}")
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)

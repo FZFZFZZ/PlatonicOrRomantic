@@ -4,9 +4,12 @@ import torch
 from pydantic import BaseModel
 import logging
 import spacy
+from IPython.display import display, HTML
 
 from .lstm_basic import LstmBasic
 from .lstm_advanced import LstmAdvanced
+from lime.lime_text import LimeTextExplainer
+
 
 class TextData(BaseModel):
     role: Literal["A", "B"]
@@ -21,9 +24,9 @@ class LstmPredictor:
     MACRO_SEQUENCE_LENGTH = 25
 
     def __init__(self,
-                 variant: str = "glove.42B.300d",
+                 variant: str = "glove.6B.50d",
                  with_pause: bool = True,
-                 advanced: bool = False,
+                 advanced: bool = False
                  ):
         """
         Instantiates a new instance for prediction.
@@ -83,7 +86,7 @@ class LstmPredictor:
         self.logger.info(f"Using device: {device}")
         return device
 
-    def predict(self, dialogues: list[list]) -> list[Literal[-1, 0, 1]]:
+    def predict(self, dialogues: list[list], explainer_mode=False):
         """
         Predicts the label of the given list of dialogues.
 
@@ -97,15 +100,19 @@ class LstmPredictor:
         
         Returns
         ---
-        list[Literal[-1, 0, 1]]
-            The list of corresponding labels
+        If in explainer mode, returns probabilities of each class.
+        Else, return list[Literal[-1, 0, 1]] (The list of corresponding labels)
         """
         X = self._preprocess(dialogues)
         X = X.to(self.device)
         with torch.no_grad():
             probas = self.model(X).cpu().detach().numpy()
-        preds = np.argmax(probas, axis=1) - 1
-        return list(preds)
+        if explainer_mode:
+            # For explainer mode, return the probabilities
+            return probas
+        else:
+            preds = np.argmax(probas, axis=1) - 1
+            return list(preds)
     
     def _preprocess(self, dialogues: list[list]) -> torch.Tensor:
         processed_dialogues = []
@@ -150,26 +157,16 @@ class LstmPredictor:
         return torch.tensor(np.array(processed_dialogues), dtype=torch.float32)
 
 
+
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
+    
     # No. 20
+    predictor = LstmPredictor()
     dialogues = [
         [
-            {'role': 'B', 'response': "Hi Priya! How's your day going? Want to grab dinner tonight? 😊"},
-            {'role': 'A', 'response': "Hey Arjun! My day's been inspiring. I'd love to! What time are you thinking?"},
-            {'role': 'B', 'response': "How about 7? Let's meet at Orchard Road, it's lovely at night! 😍"},
-            {'role': 'A', 'response': "Perfect! I'll bring my sketchbook. See you there!"},
-            {'role': 'B', 'response': "Looking forward to it! Can't wait to see your sketches. 😊"},
-            {'role': 'A', 'response': 'Awesome! Any favorite spots around Orchard Road you like?'},
-            {'role': 'B', 'response': "There's a cozy rooftop cafe I love. Interested?"},
-            {'role': 'A', 'response': 'Definitely interested! Sounds like a beautiful spot for inspiration.'},
-            {'role': 'B', 'response': "It'll be great, can't wait to see you and your art! 😊"},
-            {'role': 'A', 'response': "Can't wait too, Arjun! It'll be a memorable evening."},
-            {'role': 'B', 'response': 'Indeed, Priya. Tonight will be unforgettable. See you soon!'},
-            {'role': 'A', 'response': 'See you soon, Arjun! Excited for our evening together. 🍭'},
-            {'role': 'B', 'response': '$EXIT$'}
+            {'role': 'B', 'response': "Hi Priya! How's your day going? Want to grab dinner tonight?"},
         ]
     ]
-    predictor = LstmPredictor()
     labels = predictor.predict(dialogues)
     print(labels)

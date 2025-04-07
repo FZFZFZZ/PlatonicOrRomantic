@@ -1,0 +1,9 @@
+<h1>{{ dialog.title }}</h1>
+<ul>
+{% for sentence in dialog.sentence_set.all %}
+    <li>
+        <h2>{{ sentence.role.name }}</h2>
+        <p>{{ sentence.content }}<p>
+    </li>
+{% endfor %}
+</ul>

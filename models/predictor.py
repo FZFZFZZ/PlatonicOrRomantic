@@ -158,7 +158,7 @@ class LstmPredictor:
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
-    predictor = LstmPredictor()
+    
     # No. 20
     #dialogues = [
     #    [
@@ -179,6 +179,8 @@ if __name__ == '__main__':
     #]
     #labels = predictor.predict(dialogues)
     #print(labels)
+    
+    predictor = LstmPredictor()
 
     def convert_text_to_dialogue(text):
         return [{'role': 'A', 'response': text}]

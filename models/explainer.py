@@ -1,24 +1,33 @@
-from typing import Literal
 import numpy as np
-import torch
-from pydantic import BaseModel
-import logging
-import spacy
 from IPython.display import display, HTML
-
-from .lstm_basic import LstmBasic
-from .lstm_advanced import LstmAdvanced
+import re
 from lime.lime_text import LimeTextExplainer
-from .predictor import LstmPredictor, TextData
+from .predictor import LstmPredictor
 
 class LimeExplainer:
     CLASS_NAMES = ['-1', '0', '1']
+    INVISIBLE_A = "\u2060"
+    INVISIBLE_B = "\u2061"
+    NUM_SAMPLES = 100 # empirically good in terms of convergence and speed
+    NUM_KEYWORDS = 3 # how many keywords to highlight in one dialogue
     
     def __init__(self, predictor: LstmPredictor):
         self.predictor = predictor
 
     def convert_text_to_dialogue(self, text):
-        return [{'role': 'A', 'response': text}]
+        dialogue = []
+        segments = re.split(f"({self.INVISIBLE_A}|{self.INVISIBLE_B})", text)
+
+        role_map = {self.INVISIBLE_A: 'A', self.INVISIBLE_B: 'B'}
+        current_role = None
+        for seg in segments:
+            if seg in role_map:
+                current_role = role_map[seg]
+            elif current_role and seg.strip():
+                dialogue.append({'role': current_role, 'response': seg.strip()})
+        if not dialogue:
+            dialogue = [{'role': 'A', 'response': text.strip()}]
+        return dialogue
     
     def predict_proba_wrapper(self, text_samples):
         results = []
@@ -31,10 +40,28 @@ class LimeExplainer:
         probs = np.array(results)
         return probs
 
+    def explain(self, dialogues, num_features=NUM_KEYWORDS):
+        text = ""
+        for sentence in dialogues[0]:
+            marker = self.INVISIBLE_A if sentence['role'] == 'A' else self.INVISIBLE_B
+            text += marker + sentence['response'] + " "
+        explainer = LimeTextExplainer(class_names=self.CLASS_NAMES)
+        explanation = explainer.explain_instance(
+            text,
+            self.predict_proba_wrapper,
+            num_features=num_features,
+            num_samples=self.NUM_SAMPLES
+        )
+        return explanation.as_list()
+        
+
 if __name__ == '__main__':
     predictor = LstmPredictor()
     Lime = LimeExplainer(predictor)
-    explainer = LimeTextExplainer(class_names=Lime.CLASS_NAMES)
-    text = "Hi Priya! How's your day going? Want to grab dinner tonight?"
-    explanation = explainer.explain_instance(text, Lime.predict_proba_wrapper, num_features=3)
-    print(explanation.as_list())
+    dialogues = [
+        [
+            {'role': 'B', 'response': "Hi Priya! How's your day going? Want to grab dinner tonight?"},
+            {'role': 'A', 'response': "Hi Priya! How's your day going? Want to grab dinner tonight?"},
+        ]
+    ]
+    print(Lime.explain(dialogues))

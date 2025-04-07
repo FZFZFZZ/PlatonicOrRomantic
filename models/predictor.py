@@ -127,13 +127,13 @@ class LstmPredictor:
                 if l_0 == 0:
                     continue
                 assert l_0 <= LstmPredictor.MICRO_SEQUENCE_LENGTH, \
-                    "Found text with longer sequence length that those this model is trained on: " \
+                    "Found text with longer sequence length than those this model is trained on: " \
                     f"\"{text_data.response}\". " \
                     "You may need to increase the length limit of micro sequence, " \
                     "but please discuss with Nguyen first."
                 embeddings = np.array(embeddings_data)
                 embeddings = np.vstack((
-                    np.zeros((LstmPredictor.MACRO_SEQUENCE_LENGTH - l_0, self.vector_size)),
+                    np.zeros((LstmPredictor.MICRO_SEQUENCE_LENGTH - l_0, self.vector_size)),
                     embeddings))
                 dialogue_data.append(embeddings)
             L_0 = len(dialogue_data)
@@ -144,7 +144,7 @@ class LstmPredictor:
                 "but please discuss with Nguyen first."
             dialogue_data = np.array(dialogue_data)
             dialogue_data = np.vstack((
-                np.zeros((LstmPredictor.MACRO_SEQUENCE_LENGTH - L_0, LstmPredictor.MACRO_SEQUENCE_LENGTH, self.vector_size)),
+                np.zeros((LstmPredictor.MACRO_SEQUENCE_LENGTH - L_0, LstmPredictor.MICRO_SEQUENCE_LENGTH, self.vector_size)),
                 dialogue_data))
             processed_dialogues.append(dialogue_data)
         return torch.tensor(np.array(processed_dialogues), dtype=torch.float32)

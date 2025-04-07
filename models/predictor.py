@@ -86,7 +86,7 @@ class LstmPredictor:
         self.logger.info(f"Using device: {device}")
         return device
 
-    def predict(self, dialogues: list[list], explainer_mode=False) -> list[Literal[-1, 0, 1]]:
+    def predict(self, dialogues: list[list], explainer_mode=False):
         """
         Predicts the label of the given list of dialogues.
 
@@ -100,8 +100,8 @@ class LstmPredictor:
         
         Returns
         ---
-        list[Literal[-1, 0, 1]]
-            The list of corresponding labels
+        If in explainer mode, returns probabilities of each class.
+        Else, return list[Literal[-1, 0, 1]] (The list of corresponding labels)
         """
         X = self._preprocess(dialogues)
         X = X.to(self.device)
@@ -170,27 +170,3 @@ if __name__ == '__main__':
     ]
     labels = predictor.predict(dialogues)
     print(labels)
-
-    #
-#
-    #def convert_text_to_dialogue(text):
-    #    return [{'role': 'A', 'response': text}]
-#
-    #def predict_proba_wrapper(text_samples):
-    #    results = []
-    #    for text in text_samples:
-    #        dialogue = convert_text_to_dialogue(text)
-    #        # Here, predictor.predict expects a list of dialogues, so wrap dialogue in a list
-    #        prob = predictor.predict([dialogue])
-    #        # Assuming predictor.predict returns a list with one element for each input dialogue
-    #        results.append(prob[0])
-    #    probs = np.array(results)
-    #    if probs.ndim != 2 or probs.shape[1] != 3:
-    #        raise ValueError("Expected model output shape (n_samples, 3), but got shape {}".format(probs.shape))
-    #    return probs
-    #
-    #explainer = LimeTextExplainer(class_names=class_names)
-    #text = "Hi Priya! How's your day going? Want to grab dinner tonight?"
-    #explanation = explainer.explain_instance(text, predict_proba_wrapper, num_features=3)
-    ##explanation.show_in_notebook(text=True)
-    #print(explanation.as_list())

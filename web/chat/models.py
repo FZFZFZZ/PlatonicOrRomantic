@@ -9,8 +9,8 @@ class Role(models.Model):
 
 class Dialog(models.Model):
     title = models.CharField()
-    label = models.IntegerField()
-    explanation = models.TextField()
+    label = models.IntegerField(default=None)
+    explanation = models.TextField(default=None)
 
     def __str__(self):
         return self.title

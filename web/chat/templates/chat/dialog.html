@@ -1,9 +1,29 @@
-<h1>{{ dialog.title }}</h1>
-<ul>
-{% for sentence in dialog.sentence_set.all %}
-    <li>
-        <h2>{{ sentence.role.name }}</h2>
-        <p>{{ sentence.content }}<p>
-    </li>
-{% endfor %}
-</ul>
+<html>
+<head>
+<title>{{ dialog.title }}</title>
+</head>
+<body>
+    <h1>{{ dialog.title }}</h1>
+    <ul>
+    {% for sentence in dialog.sentence_set.all %}
+        <li>
+            <h2>{{ sentence.role.name }}</h2>
+            <p>{{ sentence.content }}<p>
+        </li>
+    {% endfor %}
+    </ul>
+    {% if analyze %}
+        {% if dialog.label == -1 %}
+            <h1>Likely Friend.</h1>
+        {% elif dialog.label == 1 %}
+            <h1>Likely Lover.</h1>
+        {% else %}
+            <h1>The two of you likely have different opinions on this.</h1>
+        {% endif %}
+        <p>Explanation: {{ dialog.explanation }}</p>
+        <a href="{% url 'chat:dialog' dialog.id %}">hide</a>
+    {% else %}
+        <a href="{% url 'chat:analyze' dialog.id %}">Are we Lover or Friend?</a>
+    {% endif %}
+</body>
+</html>

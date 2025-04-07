@@ -25,5 +25,19 @@
     {% else %}
         <a href="{% url 'chat:analyze' dialog.id %}">Are we Lover or Friend?</a>
     {% endif %}
+
+    <form action="{% url 'chat:sendA' dialog.id %}" method="post">
+    {% csrf_token %}
+        <label for="messageA">Send as PersonA:</label>
+        <input type="text" name="messageA" id="messageA">
+        <input type="submit" value="send">
+    </form>
+
+    <form action="{% url 'chat:sendB' dialog.id %}" method="post">
+    {% csrf_token %}
+        <label for="messageB">Send as PersonB:</label>
+        <input type="text" name="messageB" id="messageB">
+        <input type="submit" value="send">
+    </form>
 </body>
 </html>

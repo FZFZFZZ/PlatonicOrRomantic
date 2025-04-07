@@ -31,3 +31,33 @@ def get_analysis_from_model(dialog):
     label = -1
     explanation = "Dummy Explanation for " + sents[0].content
     return (label, explanation)
+
+def sendA(request, pk):
+    dialog_object = get_object_or_404(Dialog, pk=pk)
+
+    content = request.POST["messageA"]
+    role = Role.objects.get(name="PersonA")
+    sentence = Sentence(
+        role=role,
+        dialog=dialog_object,
+        content=content
+    )
+    sentence.save()
+    
+    context = {"dialog": dialog_object}
+    return render(request, "chat/dialog.html", context)
+
+def sendB(request, pk):
+    dialog_object = get_object_or_404(Dialog, pk=pk)
+
+    content = request.POST["messageB"]
+    role = Role.objects.get(name="PersonB")
+    sentence = Sentence(
+        role=role,
+        dialog=dialog_object,
+        content=content
+    )
+    sentence.save()
+    
+    context = {"dialog": dialog_object}
+    return render(request, "chat/dialog.html", context)

@@ -2,7 +2,6 @@ import numpy as np
 import torch
 import sys
 import sys
-sys.path.append("C:\Users\34328\Desktop\PlatonicOrRomantic")
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import f1_score
 

@@ -4,12 +4,11 @@ import torch
 from pydantic import BaseModel
 import logging
 import spacy
+from IPython.display import display, HTML
 
 from .lstm_basic import LstmBasic
 from .lstm_advanced import LstmAdvanced
 from lime.lime_text import LimeTextExplainer
-
-class_names = ['-1', '0', '1']
 
 
 class TextData(BaseModel):
@@ -27,7 +26,7 @@ class LstmPredictor:
     def __init__(self,
                  variant: str = "glove.6B.50d",
                  with_pause: bool = True,
-                 advanced: bool = False,
+                 advanced: bool = False
                  ):
         """
         Instantiates a new instance for prediction.
@@ -87,7 +86,7 @@ class LstmPredictor:
         self.logger.info(f"Using device: {device}")
         return device
 
-    def predict(self, dialogues: list[list]) -> list[Literal[-1, 0, 1]]:
+    def predict(self, dialogues: list[list], explainer_mode=False) -> list[Literal[-1, 0, 1]]:
         """
         Predicts the label of the given list of dialogues.
 
@@ -108,9 +107,12 @@ class LstmPredictor:
         X = X.to(self.device)
         with torch.no_grad():
             probas = self.model(X).cpu().detach().numpy()
-        #preds = np.argmax(probas, axis=1) - 1
-        #return list(preds)
-        return probas
+        if explainer_mode:
+            # For explainer mode, return the probabilities
+            return probas
+        else:
+            preds = np.argmax(probas, axis=1) - 1
+            return list(preds)
     
     def _preprocess(self, dialogues: list[list]) -> torch.Tensor:
         processed_dialogues = []
@@ -160,41 +162,35 @@ if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
     
     # No. 20
-    #dialogues = [
-    #    [
-    #        {'role': 'B', 'response': "Hi Priya! How's your day going? Want to grab dinner tonight? 😊"},
-    #        {'role': 'A', 'response': "Hey Arjun! My day's been inspiring. I'd love to! What time are you thinking?"},
-    #        {'role': 'B', 'response': "How about 7? Let's meet at Orchard Road, it's lovely at night! 😍"},
-    #        {'role': 'A', 'response': "Perfect! I'll bring my sketchbook. See you there!"},
-    #        {'role': 'B', 'response': "Looking forward to it! Can't wait to see your sketches. 😊"},
-    #        {'role': 'A', 'response': 'Awesome! Any favorite spots around Orchard Road you like?'},
-    #        {'role': 'B', 'response': "$S$"},
-    #        {'role': 'A', 'response': 'Definitely interested! Sounds like a beautiful spot for inspiration.'},
-    #        {'role': 'B', 'response': "It'll be great, can't wait to see you and your art! 😊"},
-    #        {'role': 'A', 'response': "Can't wait too, Arjun! It'll be a memorable evening."},
-    #        {'role': 'B', 'response': 'Indeed, Priya. Tonight will be unforgettable. See you soon!'},
-    #        {'role': 'A', 'response': 'See you soon, Arjun! Excited for our evening together. 🍭'},
-    #        {'role': 'B', 'response': '$EXIT$'}
-    #    ]
-    #]
-    #labels = predictor.predict(dialogues)
-    #print(labels)
-    
     predictor = LstmPredictor()
+    dialogues = [
+        [
+            {'role': 'B', 'response': "Hi Priya! How's your day going? Want to grab dinner tonight?"},
+        ]
+    ]
+    labels = predictor.predict(dialogues)
+    print(labels)
 
-    def convert_text_to_dialogue(text):
-        return [{'role': 'A', 'response': text}]
-
-    def predict_proba_wrapper(text_samples):
-        dialogues = [convert_text_to_dialogue(text) for text in text_samples]
-        probs = predictor.predict(dialogues)
-        probs = np.array(probs)
-        if probs.ndim != 2 or probs.shape[1] != 3:
-            raise ValueError("Expected model output shape (n_samples, 3), but got shape {}".format(probs.shape))
-        return probs
-    
-    explainer = LimeTextExplainer(class_names=class_names)
-    text = "Hi!"
-    explanation = explainer.explain_instance(text, predict_proba_wrapper, num_features=1)
-    explanation.show_in_notebook(text=True)
-
+    #
+#
+    #def convert_text_to_dialogue(text):
+    #    return [{'role': 'A', 'response': text}]
+#
+    #def predict_proba_wrapper(text_samples):
+    #    results = []
+    #    for text in text_samples:
+    #        dialogue = convert_text_to_dialogue(text)
+    #        # Here, predictor.predict expects a list of dialogues, so wrap dialogue in a list
+    #        prob = predictor.predict([dialogue])
+    #        # Assuming predictor.predict returns a list with one element for each input dialogue
+    #        results.append(prob[0])
+    #    probs = np.array(results)
+    #    if probs.ndim != 2 or probs.shape[1] != 3:
+    #        raise ValueError("Expected model output shape (n_samples, 3), but got shape {}".format(probs.shape))
+    #    return probs
+    #
+    #explainer = LimeTextExplainer(class_names=class_names)
+    #text = "Hi Priya! How's your day going? Want to grab dinner tonight?"
+    #explanation = explainer.explain_instance(text, predict_proba_wrapper, num_features=3)
+    ##explanation.show_in_notebook(text=True)
+    #print(explanation.as_list())

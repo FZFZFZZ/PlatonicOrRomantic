@@ -40,20 +40,36 @@ class LimeExplainer:
         probs = np.array(results)
         return probs
 
-    def explain(self, dialogues, num_features=NUM_KEYWORDS):
-        text = ""
-        for sentence in dialogues[0]:
-            marker = self.INVISIBLE_A if sentence['role'] == 'A' else self.INVISIBLE_B
-            text += marker + sentence['response'] + " "
-        explainer = LimeTextExplainer(class_names=self.CLASS_NAMES)
-        explanation = explainer.explain_instance(
-            text,
-            self.predict_proba_wrapper,
-            num_features=num_features,
-            num_samples=self.NUM_SAMPLES
-        )
-        return explanation.as_list()
-        
+    def explain(self, dialogues, num_features=NUM_KEYWORDS, sentence_level=False):
+        if not sentence_level:
+            text = ""
+            for sentence in dialogues[0]:
+                marker = self.INVISIBLE_A if sentence['role'] == 'A' else self.INVISIBLE_B
+                text += marker + sentence['response'] + " "
+            explainer = LimeTextExplainer(class_names=self.CLASS_NAMES)
+            explanation = explainer.explain_instance(
+                text,
+                self.predict_proba_wrapper,
+                num_features=num_features,
+                num_samples=self.NUM_SAMPLES
+            )
+            return explanation.as_list()
+        else:
+            dialogue_xs = dialogues[0]
+            length = len(dialogue_xs)
+            if length == 0:
+                return []
+            i = 0
+            curr_dialogue = [dialogue_xs[i]]
+            log = ''
+            while i < length:
+                curr_dialogue.append(dialogue_xs[i])
+                label = self.predictor.predict([curr_dialogue])
+                log += f"Until sentence {i}, the label is {label}\n"
+                i += 1
+            return log
+
+
 
 if __name__ == '__main__':
     predictor = LstmPredictor()
@@ -66,4 +82,4 @@ if __name__ == '__main__':
             {'role': 'B', 'response': 'Guess we both like being direct! See you soon, Nur. 😊'}
         ],
     ]
-    print(Lime.explain(dialogues))
+    print(Lime.explain(dialogues, sentence_level=True))

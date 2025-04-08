@@ -5,6 +5,7 @@ from pydantic import BaseModel
 import logging
 import spacy
 from IPython.display import display, HTML
+import torch.nn.functional as F
 
 from .lstm_basic import LstmBasic
 from .lstm_advanced import LstmAdvanced
@@ -106,7 +107,8 @@ class LstmPredictor:
         X = self._preprocess(dialogues)
         X = X.to(self.device)
         with torch.no_grad():
-            probas = self.model(X).cpu().detach().numpy()
+            logits = self.model(X)
+            probas = F.softmax(logits, dim=1).cpu().detach().numpy()
         if explainer_mode:
             # For explainer mode, return the probabilities
             return probas
@@ -161,12 +163,15 @@ class LstmPredictor:
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
     
-    # No. 20
+    # No. 1
     predictor = LstmPredictor()
     dialogues = [
         [
-            {'role': 'B', 'response': "Hi Priya! How's your day going? Want to grab dinner tonight?"},
-        ]
+            {'role': 'A', 'response': 'Hey Alex! Saw your profile and felt a connection. Wanna grab dinner tonight? 😊'}, 
+            {'role': 'B', 'response': "Absolutely! Let's meet at 7 PM? Looking forward to it! 😊"}, 
+            {'role': 'A', 'response': "Great! Can't wait to know you better. 😊"}, 
+            {'role': 'B', 'response': 'Guess we both like being direct! See you soon, Nur. 😊'}
+        ],
     ]
     labels = predictor.predict(dialogues)
     print(labels)

@@ -8,8 +8,8 @@ class LimeExplainer:
     CLASS_NAMES = ['-1', '0', '1']
     INVISIBLE_A = "\u2060"
     INVISIBLE_B = "\u2061"
-    NUM_SAMPLES = 100 # empirically good in terms of convergence and speed
-    NUM_KEYWORDS = 3 # how many keywords to highlight in one dialogue
+    NUM_SAMPLES = 4000 # empirically good in terms of convergence and speed
+    NUM_KEYWORDS = 10 # how many keywords to highlight in one dialogue
     
     def __init__(self, predictor: LstmPredictor):
         self.predictor = predictor
@@ -60,8 +60,10 @@ if __name__ == '__main__':
     Lime = LimeExplainer(predictor)
     dialogues = [
         [
-            {'role': 'B', 'response': "Hi Priya! How's your day going? Want to grab dinner tonight?"},
-            {'role': 'A', 'response': "Hi Priya! How's your day going? Want to grab dinner tonight?"},
-        ]
+            {'role': 'A', 'response': 'Hey Alex! Saw your profile and felt a connection. Wanna grab dinner tonight? 😊'}, 
+            {'role': 'B', 'response': "Absolutely! Let's meet at 7 PM? Looking forward to it! 😊"}, 
+            {'role': 'A', 'response': "Great! Can't wait to know you better. 😊"}, 
+            {'role': 'B', 'response': 'Guess we both like being direct! See you soon, Nur. 😊'}
+        ],
     ]
     print(Lime.explain(dialogues))

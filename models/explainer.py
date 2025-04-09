@@ -192,4 +192,4 @@ if __name__ == '__main__':
             }
         ]
     ]
-    print(Lime.explain(dialogues, mode=2)) # word_level: mode=0; sentence_level_sequential: mode=1; sentence_level_limelike: mode=2
+    print(Lime.explain(dialogues, mode=0)) # word_level: mode=0; sentence_level_sequential: mode=1; sentence_level_limelike: mode=2

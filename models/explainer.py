@@ -86,7 +86,10 @@ class LimeExplainer:
                 if diff_list == []:
                     flag = True
                 else:
-                    flag = False
+                    if len(diff_list) < self.NUM_KEYSENTENCE:
+                        flag = True
+                    else:
+                        flag = False
                     for dif in diff_list:
                         if diff > dif:
                             flag = True
@@ -109,87 +112,8 @@ if __name__ == '__main__':
     predictor = LstmPredictor()
     Lime = LimeExplainer(predictor)
     dialogues = [
-        [
-            {
-                "role": "A",
-                "response": "Hey Sofia! 🎨😄 Just tried some cool surrealism-inspired vector art today. What's up with you?"
-            },
-            {
-                "role": "B",
-                "response": "Hey Kevin! Just uploaded my digital art from a VR concert. Week's been a whirlwind lol."
-            },
-            {
-                "role": "A",
-                "response": "A VR concert sounds wild! I bet it was visually awesome. What music were they playing?"
-            },
-            {
-                "role": "B",
-                "response": "Oh, loads of sick pop, EDM vibes! You should join next time to experience it too."
-            },
-            {
-                "role": "A",
-                "response": "Pop and EDM! Sounds like a vibrant mix. Which artwork did you create for it?"
-            },
-            {
-                "role": "B",
-                "response": "It’s a vivid virtual world inspired by my concert vibes and playlists. Hope you like it!"
-            },
-            {
-                "role": "A",
-                "response": "That sounds incredible! I'd love to see more of your VR artwork sometime."
-            },
-            {
-                "role": "B",
-                "response": "You should totally swing by a VR event or join my online community!"
-            },
-            {
-                "role": "A",
-                "response": "I've never been to a VR event. Got tips for a newcomer?"
-            },
-            {
-                "role": "B",
-                "response": "Start with an EDM themed one—gets you vibing instantly! 😊"
-            },
-            {
-                "role": "A",
-                "response": "EDM isn't usually my thing, any relaxing events to start with maybe?"
-            },
-            {
-                "role": "B",
-                "response": "Try a chillout session, maybe a serene studio virtual tour!"
-            },
-            {
-                "role": "A",
-                "response": "A serene studio tour sounds perfect! Count me in. 😊"
-            },
-            {
-                "role": "B",
-                "response": "I'll keep you updated whenever there's one you might like!"
-            },
-            {
-                "role": "A",
-                "response": "Thanks! Can't wait to discover this new realm within our art world."
-            },
-            {
-                "role": "B",
-                "response": "Our virtual art glide awaits, hype's inevitable! 😊🤗"
-            },
-            {
-                "role": "A",
-                "response": "Let's dive in soon, curious about how it merges with digital art!"
-            },
-            {
-                "role": "B",
-                "response": "$S$"
-            },
-            {
-                "role": "A",
-                "response": "Hypothetical question, ever tried mixing other musical perspectives digitally?"
-            },
-            {
-                "role": "B",
-                "response": "Mostly on pop influences, any element you'd suggest?"
-            }
-        ]
+        []
     ]
     print(Lime.explain(dialogues, mode=0)) # word_level: mode=0; sentence_level_sequential: mode=1; sentence_level_limelike: mode=2
+    print(Lime.explain(dialogues, mode=1))
+    print(Lime.explain(dialogues, mode=2))

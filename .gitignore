@@ -181,3 +181,4 @@ cython_debug/
 embeddings/glove.6B.100d.txt
 embeddings/glove.6B.50d.txt
 output/lstm_basic.glove.6B.50d.pkl
+output/lstm_basic_0.glove.42B.300d.pkl

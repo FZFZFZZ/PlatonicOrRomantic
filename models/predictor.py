@@ -4,12 +4,10 @@ import torch
 from pydantic import BaseModel
 import logging
 import spacy
-from IPython.display import display, HTML
 import torch.nn.functional as F
 
 from .lstm_basic import LstmBasic
 from .lstm_advanced import LstmAdvanced
-from lime.lime_text import LimeTextExplainer
 
 
 class TextData(BaseModel):
@@ -124,7 +122,7 @@ class LstmPredictor:
                 if not isinstance(text, dict):
                     raise ValueError(
                         f"Each text must be a dictionary with keys \"role\" and \"response\", "
-                         "but received type {type(text)}")
+                        f"but received type {type(text)}")
                 text_data = TextData(**text)
                 doc = self.nlp(text_data.response)
                 embeddings_data = []

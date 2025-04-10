@@ -23,7 +23,7 @@ class LstmPredictor:
     MACRO_SEQUENCE_LENGTH = 25
 
     def __init__(self,
-                 variant: str = "glove.6B.50d",
+                 variant: str = "glove.42B.300d",
                  with_pause: bool = True,
                  advanced: bool = False
                  ):

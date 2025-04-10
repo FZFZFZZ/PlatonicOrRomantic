@@ -10,7 +10,7 @@ logging.basicConfig(level=logging.INFO)
 
 app = FastAPI()
 
-predictor = LstmPredictor()
+predictor = LstmPredictor(variant="glove.6B.50d")
 explainer = LimeExplainer(predictor)
 
 app.add_middleware(

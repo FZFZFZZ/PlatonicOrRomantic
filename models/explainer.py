@@ -112,7 +112,7 @@ if __name__ == '__main__':
     predictor = LstmPredictor()
     Lime = LimeExplainer(predictor)
     dialogues = [
-        []
+        [{"role": "A", "response": "They are so beautiful aren’t they"}, {"role": "B", "response": "Good morning sunshine\nThe next time I’m distracting you from learning please say that"}, {"role": "A", "response": "Morning honey"}, {"role": "A", "response": "I will\nBut as I have never said that I think you should have known what I mean\nAnd today finally I can talk with my supervisor about my future plans. She is sooooo cute"}, {"role": "B", "response": "😢I will steal every cute girl from you"}]
     ]
     print(Lime.explain(dialogues, mode=0)) # word_level: mode=0; sentence_level_sequential: mode=1; sentence_level_limelike: mode=2
     print(Lime.explain(dialogues, mode=1))

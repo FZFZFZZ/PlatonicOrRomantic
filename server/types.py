@@ -9,5 +9,5 @@ class RequestModel(BaseModel):
 class ResponseModel(BaseModel):
     label: Label
     word_explanation: list[tuple[str, float]]
-    # sequence_explanation: list[Label]
+    sequence_explanation: list[Label]
     sentence_explanation: list[tuple[TextData, float]]

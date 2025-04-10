@@ -61,13 +61,13 @@ class LimeExplainer:
                 return []
             i = 0
             curr_dialogue = [dialogue_xs[i]]
-            log = ''
+            labels = []
             while i < length:
                 curr_dialogue.append(dialogue_xs[i])
-                label = self.predictor.predict([curr_dialogue])
-                log += f"Until sentence {i}, the label is {label}\n"
+                label = self.predictor.predict([curr_dialogue])[0]
+                labels.append(label)
                 i += 1
-            return log
+            return labels
         elif mode == 2:
             true_prob = self.predictor.predict([dialogue], explainer_mode=True)
             true_index = np.argmax(true_prob, axis=1)

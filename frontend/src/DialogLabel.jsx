@@ -38,12 +38,12 @@ export function DetailedChatHistory({ chatHistory, trigger, suppress }) {
   }, [trigger]);
 
   return(
-    <div className="space-y-2">
+    <div>
     {chatHistory.map((entry, index) => (
-        <div key={index} className="p-2 border rounded">
+        <div key={index}>
         <strong>Role {entry.role}:</strong>
         <SentenceHighlight sentence={entry.message} indices={wordIndices[index] || []} />
-        {trigger && <progress max="100" value="80"></progress>}
+        {trigger && <progress></progress>}
         </div>
     ))}
     </div>

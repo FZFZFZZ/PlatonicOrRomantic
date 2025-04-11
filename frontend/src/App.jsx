@@ -9,6 +9,7 @@ export default function ChatApp() {
   let sampleHighlightIndices = [[], [0, 3], [0, 3, 4], []]
   let sampleLabel = 'You are friends!'
   let sampleExplanation = 'because you don\'t sound familiar'
+  let sampleSentenceLabels = [0, 0, 0, 1]
 
   // current input
   const [role, setRole] = useState("A")
@@ -18,15 +19,19 @@ export default function ChatApp() {
   const [messageHistory, setMessageHistory] = useState(sampleMessageHistory)
   const [roleHistory, setRoleHistory] = useState(sampleRoleHistory)
   const [highlightIndices, setHighlightIndices] = useState(sampleHighlightIndices)
+  const [sentenceLabels, setSentenceLabels] = useState(sampleSentenceLabels)
 
   // labels 
   const [label, setLabel] = useState(sampleLabel)
   const [explanation, setExplanation] = useState(sampleExplanation)
 
   useEffect(() => {
-    if (label === "") {
+    if (label !== "") {
       setHighlightIndices(getHighlightIndices())
-      setExplanation(getExplanation)
+      setExplanation(getExplanation())
+      setSentenceLabels(getSentenceLabels())
+    } else {
+      setExplanation("")
     }
   }, [label])
 
@@ -39,7 +44,8 @@ export default function ChatApp() {
         <ul>
           {messageHistory.map((msg, idx) => 
             <li>{roleHistory[idx]}: 
-              <SentenceHighlight sentence={msg} indices={highlightIndices[idx]} label={label}></SentenceHighlight>
+              <HighlightedSentence sentence={msg} indices={highlightIndices[idx]} label={label}></HighlightedSentence>
+              <SentenceLabelComponent sentenceLabel={sentenceLabels[idx]} label={label}></SentenceLabelComponent>
             </li>)}
         </ul>
       </div>
@@ -78,17 +84,17 @@ export default function ChatApp() {
 
       {/* Label */}
       <div>
-        <strong>Dialogue Label: </strong> {label}
+        {label === "" ? null : <strong>Dialogue Label: </strong> }{label}
       </div>
       <div>
-        <strong>Explanation: </strong> {explanation}
+        {label === "" ? null : <strong>Explanation: </strong> }{explanation}
       </div>
       
       {/* ReLabel Button */}
       <div>
         <button onClick={() => {
           setLabel((label) => (label === "" ? getLabel() : ""))
-        }}>Are we friends or lovers?</button>
+        }}>{label === "" ? 'Are we friends or lovers?' : 'Hide labels'}</button>
       </div>
       
       {/* Recall Button */}
@@ -96,6 +102,7 @@ export default function ChatApp() {
         <button onClick={() => {
           setMessageHistory(messageHistory.slice(0, -1))
           setRoleHistory(roleHistory.slice(0, -1))
+          setSentenceLabels(sentenceLabels.slice(0, -1))
         }}>Recall</button>
       </div>
     </div>
@@ -108,7 +115,7 @@ function handleSubmit() {
 }
 
 function getLabel() {
-  const sampleLabel = 'You are friends.'
+  const sampleLabel = 'You are lovers!'
   return sampleLabel
 }
 
@@ -119,11 +126,16 @@ function getHighlightIndices() {
 }
 
 function getExplanation() {
-  const sampleExplanation = 'because yaa don\'t sound familiar'
+  const sampleExplanation = 'because you sound crazy.'
   return sampleExplanation
 }
 
-function SentenceHighlight({ sentence, indices, label }) {
+function getSentenceLabels() {
+  const sampleSentenceLabels = [1, 0, 1, 0]
+  return sampleSentenceLabels
+}
+
+function HighlightedSentence({ sentence, indices, label }) {
   const words = sentence.split(' ');
 
   return (
@@ -146,3 +158,7 @@ function SentenceHighlight({ sentence, indices, label }) {
     </div>
   );
 };
+
+function SentenceLabelComponent( {sentenceLabel, label} ) {
+  return label !== "" ? <span><strong> (Label: {sentenceLabel})</strong></span> : null
+}

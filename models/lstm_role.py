@@ -5,8 +5,18 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import f1_score
 import sys
 
-from preprocess import load_data as load_glove_data
-from preprocess_bert import load_data as load_bert_data
+
+
+import pickle
+
+from typing import Literal
+Role = Literal[-1, 1]
+# array shape: (L, V) where L is number of tokens, V is vector size (currently 50)
+# None means a long pause
+Text = tuple[Role, np.ndarray | None]
+Dialog = list[Text]
+Label = Literal[-1, 0, 1]
+
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(f"Using device: {device}")
@@ -16,8 +26,57 @@ print(f"Using device: {device}")
 MICRO_SEQUENCE_LENGTH = 40
 MACRO_SEQUENCE_LENGTH = 25
 
-from typing import Literal
-Role = Literal[-1, 1]
+
+
+def load_glove_data(file: str) -> tuple[list[tuple[Dialog, Label]], int]:
+    """
+    Paremeters
+    ---
+    file: str
+        The file to load the data from.
+    
+    Returns
+    ---
+    tuple[list[tuple[Dialog, Label]], int]
+        The data and the size of each word vector.
+        Size of each word vector is inferred from the file name.
+    """
+    with open(file, "rb") as f:
+        data = pickle.load(f)
+    size = int(file.split(".")[-2][:-1])
+    return data, size
+
+
+def load_bert_data(file: str) -> tuple[list[tuple[Dialog, Label]], int]:
+    """
+    Parameters
+    ---
+    file: str
+        The file to load the data from.
+
+    Returns
+    ---
+    tuple[list[tuple[Dialog, Label]], int]
+        The data and the size of one word vector.
+        Size of one word vector is by default 768
+    """
+    with open(file, "rb") as f:
+        data = pickle.load(f)
+    return data, 768
+
+
+class CombineLabel(nn.Module):
+    def __init__(self):
+        super().__init__()
+    
+    def forward(self, x: torch.Tensor) -> torch.Tensor:  # size of x: (N, 2, 2)
+        p0 = x[:, :, 0]
+        p1 = x[:, :, 1]
+        return torch.stack([
+            p0[:, 0] * p0[:, 1],
+            p0[:, 0] * p1[:, 1] + p1[:, 0] * p0[:, 1],
+            p1[:, 0] * p1[:, 1],
+        ], dim=1)
 
 class LstmBasic(nn.Module):
     def __init__(self,
@@ -38,8 +97,9 @@ class LstmBasic(nn.Module):
         self.large_lstm = nn.LSTM(input_size=small_output_size,
                                   hidden_size=large_hidden_size,
                                   batch_first=True)
-        self.large_output = nn.Linear(large_hidden_size * role_count, 2)
+        self.large_output = nn.Linear(large_hidden_size, 2)
         self.final_output = nn.Linear(role_count * 2, 3)
+        self.combine_label = CombineLabel()
     
     def forward(self, x: torch.Tensor) -> torch.Tensor:  # size of x: (N, r, L, l, v)
         N, r, L, l, v = x.shape
@@ -49,13 +109,12 @@ class LstmBasic(nn.Module):
         large_inputs = small_outputs.reshape(N * r, L, self.V)  # size: (N * r, L, V)
         _, (large_lstm_output, _) = self.large_lstm(large_inputs)  # size: (1, N * r, H)
         large_outputs = self.large_output(large_lstm_output[0])  # size: (N * r, 2)
-        final_inputs = large_outputs.reshape(N, r, 2).reshape(N, r * 2)
-        final_outputs = self.final_output(final_inputs)
-        return final_outputs
+        label_inputs = large_outputs.reshape(N, r, 2)
+        return self.combine_label(label_inputs)
 
 def train(X: torch.Tensor,
           y: torch.Tensor,
-          vector_size: int,
+          vector_size: torch.Tensor,
           lr: float = 0.0001,
           epochs: int = 500,
           sample_size: int = 300
@@ -111,6 +170,7 @@ def load(file: str):
     
     dialogues = [dialogue for dialogue, _ in data]
     X = []
+    
     for dialogue in dialogues:
         dialogue_data = [[],[]]
         for text in dialogue:

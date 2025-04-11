@@ -175,8 +175,12 @@ def load(file: str):
         dialogue_data = [[],[]]
         for text in dialogue:
             role, embeddings = text
-            l_0, v = embeddings.shape
-            assert 0 < l_0 <= MICRO_SEQUENCE_LENGTH and v == vector_size
+            if embeddings is None:
+                l_0, v = (MICRO_SEQUENCE_LENGTH, vector_size)
+                embeddings = np.zeros((MICRO_SEQUENCE_LENGTH, v))
+            else:
+                l_0, v = embeddings.shape
+                assert 0 < l_0 <= MICRO_SEQUENCE_LENGTH and v == vector_size
             embeddings = np.vstack((np.zeros((MICRO_SEQUENCE_LENGTH - l_0, v)), embeddings))
             if role == -1:
                 dialogue_data[0].append(embeddings)

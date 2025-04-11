@@ -3,12 +3,12 @@ import React, { useState, useEffect } from "react";
 
 export default function ChatApp() {
 
-  // test
-  const [click, setClick] = useState(0)
-
   // sample data
   let sampleMessageHistory = ['Hi', 'Nice to meet you', 'Nice to meet you too!', 'How are you?']
   let sampleRoleHistory = ['A', 'B', 'A', 'A']
+  let sampleHighlightIndices = [[], [0, 3], [0, 3, 4], []]
+  let sampleLabel = 'You are friends!'
+  let sampleExplanation = 'because you don\'t sound familiar'
 
   // current input
   const [role, setRole] = useState("A")
@@ -17,25 +17,30 @@ export default function ChatApp() {
   // chatHistory
   const [messageHistory, setMessageHistory] = useState(sampleMessageHistory)
   const [roleHistory, setRoleHistory] = useState(sampleRoleHistory)
-  const [importantIndex, setImportantIndex] = useState([])
+  const [highlightIndices, setHighlightIndices] = useState(sampleHighlightIndices)
 
   // labels 
-  const [label, setLabel] = useState("")
-  const [explanation, setExplanation] = useState("")
+  const [label, setLabel] = useState(sampleLabel)
+  const [explanation, setExplanation] = useState(sampleExplanation)
 
-
+  useEffect(() => {
+    if (label === "") {
+      setHighlightIndices(getHighlightIndices())
+      setExplanation(getExplanation)
+    }
+  }, [label])
 
   return (
     <div>
       <h1>Lover or Friend Chat</h1>
-      <h1>Click: {click}</h1>
 
       {/* Chat History with hightlight of important words*/}
       <div>
         <ul>
-          {messageHistory}
-          {roleHistory}
-          {/* {messageHistory.map((msg, idx) => <li>{roleHistory[idx]}: {msg}</li>)} */}
+          {messageHistory.map((msg, idx) => 
+            <li>{roleHistory[idx]}: 
+              <SentenceHighlight sentence={msg} indices={highlightIndices[idx]} label={label}></SentenceHighlight>
+            </li>)}
         </ul>
       </div>
 
@@ -44,7 +49,6 @@ export default function ChatApp() {
         <button
           onClick={() => {
             setRole((prev) => (prev === "A" ? "B" : "A"));
-            setClick(click+1)
           }}
         >
           Current Role: {role} (Click to switch)
@@ -58,14 +62,14 @@ export default function ChatApp() {
           value={message}
           onChange={(e) => {
             setMessage(e.target.value);
-            setClick(click+1)
           }}
         />
         <button
           type="submit"
           onSubmit={() => {
-            setMessageHistory(messageHistory.push(message))
-            setRoleHistory(roleHistory.push(role))
+            setMessageHistory((messageHistory) => [...messageHistory, message])
+            setRoleHistory((roleHistory) => [...roleHistory, role])
+            setHighlightIndices((highlightIndices) => [...highlightIndices, []])
           }}
         >
           Send
@@ -74,14 +78,16 @@ export default function ChatApp() {
 
       {/* Label */}
       <div>
-        <strong>Dialogue Label:</strong> {label}
+        <strong>Dialogue Label: </strong> {label}
+      </div>
+      <div>
+        <strong>Explanation: </strong> {explanation}
       </div>
       
       {/* ReLabel Button */}
       <div>
         <button onClick={() => {
           setLabel((label) => (label === "" ? getLabel() : ""))
-          setClick(click+1)
         }}>Are we friends or lovers?</button>
       </div>
       
@@ -106,3 +112,37 @@ function getLabel() {
   return sampleLabel
 }
 
+
+function getHighlightIndices() {
+  const sampleHighlightIndices = [[], [0, 2], [0, 3, 4], []]
+  return sampleHighlightIndices
+}
+
+function getExplanation() {
+  const sampleExplanation = 'because yaa don\'t sound familiar'
+  return sampleExplanation
+}
+
+function SentenceHighlight({ sentence, indices, label }) {
+  const words = sentence.split(' ');
+
+  return (
+    <div>
+      {words.map((word, index) => {
+        const isHighlighted = (label !== "") && indices.includes(index);
+        return (
+          <span
+            key={index}
+            style={{
+              backgroundColor: isHighlighted ? 'yellow' : 'transparent',
+              padding: '0 2px',
+              marginRight: '4px',
+            }}
+          >
+            {word} 
+          </span>
+        );
+      })}
+    </div>
+  );
+};

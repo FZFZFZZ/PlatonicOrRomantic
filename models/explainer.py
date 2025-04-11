@@ -1,9 +1,7 @@
 import numpy as np
-from IPython.display import display, HTML
 import re
 from lime.lime_text import LimeTextExplainer
 from .predictor import LstmPredictor
-import random
 
 class LimeExplainer:
     CLASS_NAMES = ['-1', '0', '1']
@@ -36,16 +34,16 @@ class LimeExplainer:
         for text in text_samples:
             dialogue = self.convert_text_to_dialogue(text)
             # Here, predictor.predict expects a list of dialogues, so wrap dialogue in a list
-            prob = predictor.predict([dialogue], explainer_mode=True)
+            prob = self.predictor.predict([dialogue], explainer_mode=True)
             # Assuming predictor.predict returns a list with one element for each input dialogue
             results.append(prob[0])
         probs = np.array(results)
         return probs
 
-    def explain(self, dialogues, num_features=NUM_KEYWORDS, mode=0):
+    def explain(self, dialogue: list, num_features=NUM_KEYWORDS, mode=0):
         if mode == 0:
             text = ""
-            for sentence in dialogues[0]:
+            for sentence in dialogue:
                 marker = self.INVISIBLE_A if sentence['role'] == 'A' else self.INVISIBLE_B
                 text += marker + sentence['response'] + " "
             explainer = LimeTextExplainer(class_names=self.CLASS_NAMES)
@@ -57,29 +55,29 @@ class LimeExplainer:
             )
             return explanation.as_list()
         elif mode == 1:
-            dialogue_xs = dialogues[0]
+            dialogue_xs = dialogue
             length = len(dialogue_xs)
             if length == 0:
                 return []
             i = 0
             curr_dialogue = [dialogue_xs[i]]
-            log = ''
+            labels = []
             while i < length:
                 curr_dialogue.append(dialogue_xs[i])
-                label = self.predictor.predict([curr_dialogue])
-                log += f"Until sentence {i}, the label is {label}\n"
+                label = self.predictor.predict([curr_dialogue])[0]
+                labels.append(label)
                 i += 1
-            return log
+            return labels
         elif mode == 2:
-            true_prob = self.predictor.predict(dialogues, explainer_mode=True)
+            true_prob = self.predictor.predict([dialogue], explainer_mode=True)
             true_index = np.argmax(true_prob, axis=1)
-            length = len(dialogues[0])
+            length = len(dialogue)
             if length <= self.NUM_KEYSENTENCE:
                 return "Dialogue is too short! All sentences are important to the label generated."
             diff_list = []
             res_list = []
             for i in range(length):
-                copy_d = dialogues[0].copy()
+                copy_d = dialogue.copy()
                 del copy_d[i]
                 new_prob = self.predictor.predict([copy_d], explainer_mode=True)
                 diff = np.abs(true_prob[0][true_index] - new_prob[0][true_index]) 
@@ -101,7 +99,7 @@ class LimeExplainer:
                         min_val = min(diff_list)
                         res_list.remove(res_list[diff_list.index(min_val)])
                         diff_list.remove(min_val)
-            res_sentences = list(map(lambda x: dialogues[0][x], res_list))
+            res_sentences = list(map(lambda x: dialogue[x], res_list))
             res = []
             for i in range(len(res_sentences)):
                 res.append((res_sentences[i], -float(diff_list[i][0])))

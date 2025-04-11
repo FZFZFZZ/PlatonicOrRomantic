@@ -178,3 +178,6 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
+embeddings/glove.6B.100d.txt
+embeddings/glove.6B.50d.txt
+output/lstm_basic.glove.6B.50d.pkl

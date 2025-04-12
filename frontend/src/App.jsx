@@ -13,11 +13,41 @@ export default function ChatApp() {
   // chatHistory
   const [messageHistory, setMessageHistory] = useState(sampleMessageHistory)
   const [roleHistory, setRoleHistory] = useState(sampleRoleHistory)
-  const [highlightIndices, setHighlightIndices] = useState([])
+  const [words, setWords] = useState([])
   const [sentenceLabels, setSentenceLabels] = useState([])
 
   // labels 
   const [label, setLabel] = useState('')
+
+  const handleSubmit = () => {
+    const endpoint = import.meta.env.MODE === "development"
+      ? "http://localhost:8000/evaluate"
+      : "https://friendzone-backend.nknguyenhc.net/evaluate"
+    const conversation = [];
+    for (let i = 0; i < messageHistory.length; i++) {
+      conversation.push({
+        role: roleHistory[i],
+        response: messageHistory[i],
+      });
+    }
+    fetch(endpoint, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        conversation: conversation,
+      }),
+    })
+      .then(res => res.json())
+      .then(data => {
+        setLabel(data.label);
+        setSentenceLabels(data.sequence_explanation);
+        setWords(data.word_explanation
+          .filter(([word, value]) => value > 0)
+          .map(([word]) => word));
+      })
+  }
 
   return (
     <div style={{
@@ -29,8 +59,8 @@ export default function ChatApp() {
       <div>
         <ul>
           {messageHistory.map((msg, idx) => 
-            <li>{roleHistory[idx]}: 
-              <HighlightedSentence sentence={msg} indices={highlightIndices[idx]} label={label}></HighlightedSentence>
+            <li key={idx}>{roleHistory[idx]}: 
+              <HighlightedSentence sentence={msg} explanationWords={words} label={label}></HighlightedSentence>
               <SentenceLabelComponent sentenceLabel={sentenceLabels[idx]} label={label}></SentenceLabelComponent>
             </li>)}
         </ul>
@@ -60,7 +90,6 @@ export default function ChatApp() {
         onClick={() => {
           setMessageHistory((messageHistory) => [...messageHistory, message])
           setRoleHistory((roleHistory) => [...roleHistory, role])
-          setHighlightIndices((highlightIndices) => [...highlightIndices, []])
         }}
       >
         Send
@@ -73,9 +102,7 @@ export default function ChatApp() {
       
       {/* ReLabel Button */}
       <div>
-        <button onClick={() => {
-          setLabel((label) => label)
-        }}>Are we friends or lovers?</button>
+        <button onClick={handleSubmit}>Are we friends or lovers?</button>
       </div>
       
       {/* Recall Button */}
@@ -83,25 +110,19 @@ export default function ChatApp() {
         <button onClick={() => {
           setMessageHistory(messageHistory.slice(0, -1))
           setRoleHistory(roleHistory.slice(0, -1))
-          setSentenceLabels(sentenceLabels.slice(0, -1))
-        }}>Undo</button>
+        }}>Remove last sentence</button>
       </div>
     </div>
   );
 }
 
-
-function handleSubmit() {
-
-}
-
-function HighlightedSentence({ sentence, indices, label }) {
+function HighlightedSentence({ sentence, explanationWords, label }) {
   const words = sentence.split(' ');
 
   return (
     <div>
       {words.map((word, index) => {
-        const isHighlighted = (label !== "") && indices?.includes(index);
+        const isHighlighted = (label !== "") && explanationWords.includes(word);
         return (
           <span
             key={index}

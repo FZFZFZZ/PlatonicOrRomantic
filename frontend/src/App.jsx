@@ -6,6 +6,7 @@ const sampleRoleHistory = ['A', 'B', 'A', 'A']
 
 // error message
 const AT_LEAST_TWO_MESSAGES = "Please enter at least two messages to evaluate."
+const INTERNAL_SERVER_ERROR = "Internal server error. Please try again later."
 
 export default function ChatApp() {
 
@@ -24,12 +25,22 @@ export default function ChatApp() {
 
   // error message
   const [showError, setShowError] = useState(false)
+  const [hasInternalError, setHasInternalError] = useState(false)
+
+  // loading state
+  const [loading, setLoading] = useState(false)
 
   const handleSubmit = () => {
     if (messageHistory.length < 2) {
       setShowError(true)
       return;
     }
+    setShowError(false);
+    setLoading(true);
+    setLabel(undefined);
+    setWords([]);
+    setSentenceLabels([]);
+    setHasInternalError(false);
     const endpoint = import.meta.env.MODE === "development"
       ? "http://localhost:8000/evaluate"
       : "https://friendzone-backend.nknguyenhc.net/evaluate"
@@ -56,8 +67,14 @@ export default function ChatApp() {
         setWords(data.word_explanation
           .filter(([word, value]) => value < 0)
           .map(([word]) => word));
-        setShowError(false);
       })
+      .catch(err => {
+        console.error(err);
+        setHasInternalError(true);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
   }
 
   return (
@@ -121,6 +138,9 @@ export default function ChatApp() {
       <div style={{ color: "red" }}>
         {showError ? AT_LEAST_TWO_MESSAGES : null}
       </div>
+      <div style={{ color: "red" }}>
+        {hasInternalError ? INTERNAL_SERVER_ERROR : null}
+      </div>
       
       {/* Recall Button */}
       <div>
@@ -129,6 +149,9 @@ export default function ChatApp() {
           setRoleHistory(roleHistory.slice(0, -1))
         }}>Remove last sentence</button>
       </div>
+
+      {/* Loading State */}
+      {loading && <Loader />}
     </div>
   );
 }
@@ -172,4 +195,12 @@ function SentenceLabelComponent( {sentenceLabel, label} ) {
   return label !== "" && sentenceLabel !== undefined
     ? <span><strong> (Label so far: {numericLabelToString(sentenceLabel)})</strong></span>
     : null
+}
+
+function Loader() {
+  return (
+    <div className="loader-container">
+      <div className="loader-text">Loading...</div>
+    </div>
+  );
 }

@@ -1,15 +1,10 @@
 import React, { useState, useEffect } from "react";
 
+// sample data
+const sampleMessageHistory = ['Hi', 'Nice to meet you', 'Nice to meet you too!', 'How are you?']
+const sampleRoleHistory = ['A', 'B', 'A', 'A']
 
 export default function ChatApp() {
-
-  // sample data
-  let sampleMessageHistory = ['Hi', 'Nice to meet you', 'Nice to meet you too!', 'How are you?']
-  let sampleRoleHistory = ['A', 'B', 'A', 'A']
-  let sampleHighlightIndices = [[], [0, 3], [0, 3, 4], []]
-  let sampleLabel = 'You are friends!'
-  let sampleExplanation = 'because you don\'t sound familiar'
-  let sampleSentenceLabels = [0, 0, 0, 1]
 
   // current input
   const [role, setRole] = useState("A")
@@ -18,25 +13,16 @@ export default function ChatApp() {
   // chatHistory
   const [messageHistory, setMessageHistory] = useState(sampleMessageHistory)
   const [roleHistory, setRoleHistory] = useState(sampleRoleHistory)
-  const [highlightIndices, setHighlightIndices] = useState(sampleHighlightIndices)
-  const [sentenceLabels, setSentenceLabels] = useState(sampleSentenceLabels)
+  const [highlightIndices, setHighlightIndices] = useState([])
+  const [sentenceLabels, setSentenceLabels] = useState([])
 
   // labels 
-  const [label, setLabel] = useState(sampleLabel)
-  const [explanation, setExplanation] = useState(sampleExplanation)
-
-  useEffect(() => {
-    if (label !== "") {
-      setHighlightIndices(getHighlightIndices())
-      setExplanation(getExplanation())
-      setSentenceLabels(getSentenceLabels())
-    } else {
-      setExplanation("")
-    }
-  }, [label])
+  const [label, setLabel] = useState('')
 
   return (
-    <div>
+    <div style={{
+      padding: "20px",
+    }}>
       <h1>Lover or Friend Chat</h1>
 
       {/* Chat History with hightlight of important words*/}
@@ -62,39 +48,34 @@ export default function ChatApp() {
       </div>
 
       {/* Message Input */}
-      <form onSubmit={handleSubmit}>
-        <input
-          type="text"
-          value={message}
-          onChange={(e) => {
-            setMessage(e.target.value);
-          }}
-        />
-        <button
-          type="submit"
-          onSubmit={() => {
-            setMessageHistory((messageHistory) => [...messageHistory, message])
-            setRoleHistory((roleHistory) => [...roleHistory, role])
-            setHighlightIndices((highlightIndices) => [...highlightIndices, []])
-          }}
-        >
-          Send
-        </button>
-      </form>
+      <input
+        type="text"
+        value={message}
+        onChange={(e) => {
+          setMessage(e.target.value);
+        }}
+      />
+      <button
+        type="submit"
+        onClick={() => {
+          setMessageHistory((messageHistory) => [...messageHistory, message])
+          setRoleHistory((roleHistory) => [...roleHistory, role])
+          setHighlightIndices((highlightIndices) => [...highlightIndices, []])
+        }}
+      >
+        Send
+      </button>
 
       {/* Label */}
       <div>
         {label === "" ? null : <strong>Dialogue Label: </strong> }{label}
       </div>
-      <div>
-        {label === "" ? null : <strong>Explanation: </strong> }{explanation}
-      </div>
       
       {/* ReLabel Button */}
       <div>
         <button onClick={() => {
-          setLabel((label) => (label === "" ? getLabel() : ""))
-        }}>{label === "" ? 'Are we friends or lovers?' : 'Hide labels'}</button>
+          setLabel((label) => label)
+        }}>Are we friends or lovers?</button>
       </div>
       
       {/* Recall Button */}
@@ -103,7 +84,7 @@ export default function ChatApp() {
           setMessageHistory(messageHistory.slice(0, -1))
           setRoleHistory(roleHistory.slice(0, -1))
           setSentenceLabels(sentenceLabels.slice(0, -1))
-        }}>Recall</button>
+        }}>Undo</button>
       </div>
     </div>
   );
@@ -114,34 +95,13 @@ function handleSubmit() {
 
 }
 
-function getLabel() {
-  const sampleLabel = 'You are lovers!'
-  return sampleLabel
-}
-
-
-function getHighlightIndices() {
-  const sampleHighlightIndices = [[], [0, 2], [0, 3, 4], []]
-  return sampleHighlightIndices
-}
-
-function getExplanation() {
-  const sampleExplanation = 'because you sound crazy.'
-  return sampleExplanation
-}
-
-function getSentenceLabels() {
-  const sampleSentenceLabels = [1, 0, 1, 0]
-  return sampleSentenceLabels
-}
-
 function HighlightedSentence({ sentence, indices, label }) {
   const words = sentence.split(' ');
 
   return (
     <div>
       {words.map((word, index) => {
-        const isHighlighted = (label !== "") && indices.includes(index);
+        const isHighlighted = (label !== "") && indices?.includes(index);
         return (
           <span
             key={index}

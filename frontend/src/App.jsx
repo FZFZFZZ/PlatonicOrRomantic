@@ -31,7 +31,7 @@ export default function ChatApp() {
   const [loading, setLoading] = useState(false)
 
   const handleSubmit = () => {
-    if (messageHistory.length < 2) {
+    if (messageHistory.length <= 2) {
       setShowError(true)
       return;
     }

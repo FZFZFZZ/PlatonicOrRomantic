@@ -6,7 +6,8 @@ from sklearn.metrics import f1_score
 import sys
 
 from preprocess import load_data as load_glove_data
-from preprocess_bert import load_data as load_bert_data
+# Not using bert
+# from preprocess_bert import load_data as load_bert_data
 
 # Length 40 for 6b.50d and 6b.100d, Length 50 for the rest of glove
 # Length 75 for bert
@@ -113,10 +114,11 @@ def train(X: torch.Tensor,
     return model
 
 def load(file: str):
-    if file.endswith("bert.pkl"):
-        data, vector_size = load_bert_data(file)
-    else:
-        data, vector_size = load_glove_data(file)
+    # if file.endswith("bert.pkl"):
+    #     data, vector_size = load_bert_data(file)
+    # else:
+    #     data, vector_size = load_glove_data(file)
+    data, vector_size = load_glove_data(file)
     dialogues = [dialogue for dialogue, _ in data]
     X = []
     for dialogue in dialogues:

@@ -5,7 +5,8 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import f1_score
 
 from preprocess import load_data as load_glove_data
-from preprocess_bert import load_data as load_bert_data
+# Not using bert
+# from preprocess_bert import load_data as load_bert_data
 from .lstm_advanced import train, device
 
 # Length 50 for glove
@@ -14,10 +15,11 @@ MICRO_SEQUENCE_LENGTH = 50
 MACRO_SEQUENCE_LENGTH = 35
 
 def load(file: str):
-    if file.endswith("bert.pkl"):
-        data, vector_size = load_bert_data(file)
-    else:
-        data, vector_size = load_glove_data(file)
+    # if file.endswith("bert.pkl"):
+    #     data, vector_size = load_bert_data(file)
+    # else:
+    #     data, vector_size = load_glove_data(file)
+    data, vector_size = load_glove_data(file)
     dialogues = [dialogue for dialogue, _ in data]
     X = []
     for dialogue in dialogues:

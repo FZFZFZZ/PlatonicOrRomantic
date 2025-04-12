@@ -173,7 +173,8 @@ function HighlightedSentence({ sentence, explanationWords, label }) {
   return (
     <div>
       {words.map((word, index) => {
-        const isHighlighted = (label !== undefined) && explanationWords.includes(word);
+        const trimmedWord = word.replace(/^[.,;:!?]+|[.,;:!?]+$/g, ''); // Remove punctuation only at the start and end
+        const isHighlighted = (label !== undefined) && explanationWords.includes(trimmedWord);
         return (
           <span
             key={index}

@@ -24,7 +24,7 @@ app.add_middleware(
 @app.post("/evaluate")
 def root(body: RequestModel) -> ResponseModel:
     dialogue = body.model_dump()["conversation"]
-    if len(dialogue) < 2:
+    if len(dialogue) <= 2:
         raise HTTPException(status_code=400, detail="Dialogue must contain at least 2 sentences.")
     label = predictor.predict([dialogue])[0]
     word_explanation = explainer.explain(dialogue, mode=0)

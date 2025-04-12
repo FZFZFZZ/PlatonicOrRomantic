@@ -4,6 +4,9 @@ import React, { useState, useEffect } from "react";
 const sampleMessageHistory = ['Hi', 'Nice to meet you', 'Nice to meet you too!', 'How are you?']
 const sampleRoleHistory = ['A', 'B', 'A', 'A']
 
+// error message
+const AT_LEAST_TWO_MESSAGES = "Please enter at least two messages to evaluate."
+
 export default function ChatApp() {
 
   // current input
@@ -19,7 +22,14 @@ export default function ChatApp() {
   // labels 
   const [label, setLabel] = useState(undefined)
 
+  // error message
+  const [showError, setShowError] = useState(false)
+
   const handleSubmit = () => {
+    if (messageHistory.length < 2) {
+      setShowError(true)
+      return;
+    }
     const endpoint = import.meta.env.MODE === "development"
       ? "http://localhost:8000/evaluate"
       : "https://friendzone-backend.nknguyenhc.net/evaluate"
@@ -46,6 +56,7 @@ export default function ChatApp() {
         setWords(data.word_explanation
           .filter(([word, value]) => value < 0)
           .map(([word]) => word));
+        setShowError(false);
       })
   }
 
@@ -90,6 +101,7 @@ export default function ChatApp() {
         onClick={() => {
           setMessageHistory((messageHistory) => [...messageHistory, message])
           setRoleHistory((roleHistory) => [...roleHistory, role])
+          setMessage('');
         }}
       >
         Send
@@ -103,6 +115,11 @@ export default function ChatApp() {
       {/* ReLabel Button */}
       <div>
         <button onClick={handleSubmit}>Are we friends or lovers?</button>
+      </div>
+
+      {/* Error Message */}
+      <div style={{ color: "red" }}>
+        {showError ? AT_LEAST_TWO_MESSAGES : null}
       </div>
       
       {/* Recall Button */}

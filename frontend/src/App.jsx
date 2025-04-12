@@ -17,7 +17,7 @@ export default function ChatApp() {
   const [sentenceLabels, setSentenceLabels] = useState([])
 
   // labels 
-  const [label, setLabel] = useState('')
+  const [label, setLabel] = useState(undefined)
 
   const handleSubmit = () => {
     const endpoint = import.meta.env.MODE === "development"
@@ -44,7 +44,7 @@ export default function ChatApp() {
         setLabel(data.label);
         setSentenceLabels(data.sequence_explanation);
         setWords(data.word_explanation
-          .filter(([word, value]) => value > 0)
+          .filter(([word, value]) => value < 0)
           .map(([word]) => word));
       })
   }
@@ -97,7 +97,7 @@ export default function ChatApp() {
 
       {/* Label */}
       <div>
-        {label === "" ? null : <strong>Dialogue Label: </strong> }{label}
+        {label === "" ? null : <strong>Dialogue Label: </strong> }{numericLabelToString(label)}
       </div>
       
       {/* ReLabel Button */}
@@ -116,13 +116,24 @@ export default function ChatApp() {
   );
 }
 
+function numericLabelToString(label) {
+  switch (label) {
+    case 0:
+      return "Friend - Romantic";
+    case 1:
+      return "Romantic - Romantic";
+    case -1:
+      return "Friend - Friend";
+  }
+}
+
 function HighlightedSentence({ sentence, explanationWords, label }) {
   const words = sentence.split(' ');
 
   return (
     <div>
       {words.map((word, index) => {
-        const isHighlighted = (label !== "") && explanationWords.includes(word);
+        const isHighlighted = (label !== undefined) && explanationWords.includes(word);
         return (
           <span
             key={index}
@@ -141,5 +152,7 @@ function HighlightedSentence({ sentence, explanationWords, label }) {
 };
 
 function SentenceLabelComponent( {sentenceLabel, label} ) {
-  return label !== "" ? <span><strong> (Label: {sentenceLabel})</strong></span> : null
+  return label !== "" && sentenceLabel !== undefined
+    ? <span><strong> (Label so far: {numericLabelToString(sentenceLabel)})</strong></span>
+    : null
 }

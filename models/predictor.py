@@ -149,6 +149,10 @@ class LstmPredictor:
                 f"{dialogue} " \
                 "You may need to increase the length limit of macro sequence, " \
                 "but please discuss with Nguyen first."
+            if L_0 == 0:
+                dialogue_data = np.zeros((LstmPredictor.MACRO_SEQUENCE_LENGTH, LstmPredictor.MICRO_SEQUENCE_LENGTH, self.vector_size))
+                processed_dialogues.append(dialogue_data)
+                continue
             dialogue_data = np.array(dialogue_data)
             dialogue_data = np.vstack((
                 np.zeros((LstmPredictor.MACRO_SEQUENCE_LENGTH - L_0, LstmPredictor.MICRO_SEQUENCE_LENGTH, self.vector_size)),

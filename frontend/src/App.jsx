@@ -22,6 +22,7 @@ export default function ChatApp() {
 
   // labels 
   const [label, setLabel] = useState(undefined)
+  const [explanation, setExplanation] = useState([])
 
   // error message
   const [showError, setShowError] = useState(false)
@@ -67,6 +68,7 @@ export default function ChatApp() {
         setWords(data.word_explanation
           .filter(([word, value]) => value < 0)
           .map(([word]) => word));
+        setExplanation(data.sentence_explanation.map(([sentence, _]) => sentence));
       })
       .catch(err => {
         console.error(err);
@@ -126,7 +128,21 @@ export default function ChatApp() {
 
       {/* Label */}
       <div>
-        {label === "" ? null : <strong>Dialogue Label: </strong> }{numericLabelToString(label)}
+        {label !== undefined && <strong>Dialogue Label: </strong> }{numericLabelToString(label)}
+      </div>
+
+      {/* Label Explanation */}
+      <div>
+        {label !== undefined && (
+          <div>
+            <div>Which sentences are evidence for the label:</div>
+            {explanation.map((sentence, idx) => (
+              <div key={idx}>
+                {sentence.role}: {sentence.response}
+              </div>
+            ))}
+          </div>
+        )}
       </div>
       
       {/* ReLabel Button */}

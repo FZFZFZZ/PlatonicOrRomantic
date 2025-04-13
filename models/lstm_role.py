@@ -5,64 +5,18 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import f1_score
 import sys
 
+from .lstm_advanced import device
 
-
-import pickle
+from preprocess import load_data as load_glove_data
+from preprocess_bert import load_data as load_bert_data
 
 from typing import Literal
 Role = Literal[-1, 1]
-# array shape: (L, V) where L is number of tokens, V is vector size (currently 50)
-# None means a long pause
-Text = tuple[Role, np.ndarray | None]
-Dialog = list[Text]
-Label = Literal[-1, 0, 1]
-
-
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-print(f"Using device: {device}")
 
 # Length 40 for 6b.50d and 6b.100d, Length 50 for the rest of glove
 # Length 75 for bert
 MICRO_SEQUENCE_LENGTH = 40
 MACRO_SEQUENCE_LENGTH = 25
-
-
-
-def load_glove_data(file: str) -> tuple[list[tuple[Dialog, Label]], int]:
-    """
-    Paremeters
-    ---
-    file: str
-        The file to load the data from.
-    
-    Returns
-    ---
-    tuple[list[tuple[Dialog, Label]], int]
-        The data and the size of each word vector.
-        Size of each word vector is inferred from the file name.
-    """
-    with open(file, "rb") as f:
-        data = pickle.load(f)
-    size = int(file.split(".")[-2][:-1])
-    return data, size
-
-
-def load_bert_data(file: str) -> tuple[list[tuple[Dialog, Label]], int]:
-    """
-    Parameters
-    ---
-    file: str
-        The file to load the data from.
-
-    Returns
-    ---
-    tuple[list[tuple[Dialog, Label]], int]
-        The data and the size of one word vector.
-        Size of one word vector is by default 768
-    """
-    with open(file, "rb") as f:
-        data = pickle.load(f)
-    return data, 768
 
 
 class CombineLabel(nn.Module):

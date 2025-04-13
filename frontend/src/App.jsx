@@ -166,6 +166,11 @@ export default function ChatApp() {
         }}>Remove last sentence</button>
       </div>
 
+      {/* Hide Result Button */}
+      <div>
+        {label !== undefined && <button onClick={() => setLabel(undefined)}>Hide Result</button>}
+      </div>
+
       {/* Loading State */}
       {loading && <Loader />}
     </div>
@@ -209,7 +214,7 @@ function HighlightedSentence({ sentence, explanationWords, label }) {
 };
 
 function SentenceLabelComponent( {sentenceLabel, label} ) {
-  return label !== "" && sentenceLabel !== undefined
+  return label !== undefined && sentenceLabel !== undefined
     ? <span><strong> (Label so far: {numericLabelToString(sentenceLabel)})</strong></span>
     : null
 }

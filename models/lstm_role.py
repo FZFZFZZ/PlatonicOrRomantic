@@ -95,6 +95,8 @@ def train(X: torch.Tensor,
     nn.Module
         The trained model.
     """
+    scaler = torch.amp.GradScaler(device)
+
     model = LstmBasic(vector_size).to(device)
     model = nn.DataParallel(model)
     criterion = nn.CrossEntropyLoss()
@@ -103,11 +105,16 @@ def train(X: torch.Tensor,
         idx = np.random.choice(len(X), sample_size, replace=False)
         X_sample = X[idx].to(device)
         y_sample = y[idx].to(device)
-        optimizer.zero_grad()
-        y_pred = model(X_sample)
-        loss = criterion(y_pred, y_sample)
-        loss.backward()
+        with torch.autocast(device_type=device, dtype=torch.float16):
+            y_pred = model(X_sample)
+            loss = criterion(y_pred, y_sample)
+        scaler.scale(loss).backward()
         optimizer.step()
+        scaler.unscale_(optimizer)
+        torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=0.1)
+        scaler.step(optimizer)
+        scaler.update()
+        optimizer.zero_grad()
 
         y_pred = np.argmax(y_pred.cpu().detach().numpy(), axis=1)
         y_true = y_sample.cpu().detach().numpy()

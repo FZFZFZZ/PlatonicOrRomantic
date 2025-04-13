@@ -195,7 +195,7 @@ function HighlightedSentence({ sentence, explanationWords, label }) {
           <span
             key={index}
             style={{
-              backgroundColor: isHighlighted ? 'yellow' : 'transparent',
+              backgroundColor: isHighlighted ? 'green' : 'transparent',
               padding: '0 2px',
               marginRight: '4px',
             }}

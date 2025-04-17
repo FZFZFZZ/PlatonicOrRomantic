@@ -166,7 +166,7 @@ if __name__ == '__main__':
     # No. 1
     predictor = LstmPredictor()
     dialogues = [
-        [{"role": "A", "response": "They are so beautiful aren’t they"}, {"role": "B", "response": "Good morning sunshine\nThe next time I’m distracting you from learning please say that"}, {"role": "A", "response": "Morning honey"}, {"role": "A", "response": "I will\nBut as I have never said that I think you should have known what I mean\nAnd today finally I can talk with my supervisor about my future plans. She is sooooo cute"}, {"role": "B", "response": "😢I will steal every cute girl from you"}],
+        [{"role": "A", "response": "try ah HAHA. Nid go another tut first shag. Wanted to dip but 0.4 attendence per sesh lol. Better not."}, {"role": "B", "response": "ye AHAHA. wah in this day and age, 0.4% could make a difference sia. scary"}, {"role": "A", "response": "Right. Ikr. I missed one alr oops after competition day. Was so tired rly cannot wake up LOL. So better not miss more."}, {"role": "A", "response": "(there is me not caring abt my HSI2004 and LSM2233 weekly quizzes) 💀💀💀💀💀"}],
     ]
     labels = predictor.predict(dialogues, explainer_mode=True) # set explainer_mode=True to get probabilities
     print(labels)

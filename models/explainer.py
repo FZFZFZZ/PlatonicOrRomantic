@@ -112,8 +112,32 @@ if __name__ == '__main__':
     predictor = LstmPredictor()
     Lime = LimeExplainer(predictor)
     dialogues = [
-        [{"role": "A", "response": "They are so beautiful aren’t they"}, {"role": "B", "response": "Good morning sunshine\nThe next time I’m distracting you from learning please say that"}, {"role": "A", "response": "Morning honey"}, {"role": "A", "response": "I will\nBut as I have never said that I think you should have known what I mean\nAnd today finally I can talk with my supervisor about my future plans. She is sooooo cute"}, {"role": "B", "response": "😢I will steal every cute girl from you"}]
-    ]
+        [
+  {"role": "A", "response": "Oh, hi."},
+  {"role": "B", "response": "Good afternoon. So...hi...uh... I was wondering if you had plans for dinner."},
+  {"role": "A", "response": "Uh, you mean dinner tonight?"},
+  {"role": "B", "response": "There is an inherent ambiguity in theword 'dinner', technically it refers to the largest meal of the day wheneverit's consumed. So to clarify here, by dinner I mean supper."},
+  {"role": "A", "response": "Supper?"},
+  {"role": "B", "response": "Or dinner. I was thinking 6:30 if you can go.Or a different time."},
+  {"role": "A", "response": "Uh, 6:30 is great."},
+  {"role": "B", "response": "Really? Great."},
+  {"role": "A", "response": "Yeah, I like hanging out with you guys."},
+  {"role": "B", "response": "Us guys?"},
+  {"role": "A", "response": "Yeah, you know, your friends."},
+  {"role": "B", "response": "They might... be there."},
+  {"role": "A", "response": "Okay whatever. It sounds like fun."},
+  {"role": "B", "response": "Great. Did we say a time?"},
+  {"role": "A", "response": "6:30."},
+  {"role": "B", "response": "And that's still good for you?"},
+  {"role": "A", "response": "It's fine."},
+  {"role": "B", "response": "Cause it's not carved in stone."},
+  {"role": "A", "response": "No, 6:30 is great."},
+  {"role": "B", "response": "I'll get my chisel."},
+  {"role": "A", "response": "Why?"},
+  {"role": "B", "response": "To...carve the...I'll see you at 6:30."}
+]
+]
     print(Lime.explain(dialogues, mode=0)) # word_level: mode=0; sentence_level_sequential: mode=1; sentence_level_limelike: mode=2
     print(Lime.explain(dialogues, mode=1))
     print(Lime.explain(dialogues, mode=2))
+    print(predictor.predict(dialogues, explainer_mode=True))

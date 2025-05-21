@@ -6,10 +6,12 @@ import logging
 import spacy
 from IPython.display import display, HTML
 import torch.nn.functional as F
-
+import pandas as pd
 from .lstm_basic import LstmBasic
 from .lstm_advanced import LstmAdvanced
 from lime.lime_text import LimeTextExplainer
+import ast
+from sklearn.metrics import f1_score
 
 
 class TextData(BaseModel):
@@ -163,10 +165,41 @@ class LstmPredictor:
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
     
+    def extract_dialogues(cell):
+        try:
+            parsed = ast.literal_eval(cell)  # safely parse the string into a dict
+            return [parsed['text']]            # extract the 'text' field (the list of turns)
+        except Exception as e:
+            print(f"Failed to parse: {cell}\nError: {e}")
+            return None
+    
     # No. 1
     predictor = LstmPredictor()
-    dialogues = [
-        [{"role": "A", "response": "try ah HAHA. Nid go another tut first shag. Wanted to dip but 0.4 attendence per sesh lol. Better not."}, {"role": "B", "response": "ye AHAHA. wah in this day and age, 0.4% could make a difference sia. scary"}, {"role": "A", "response": "Right. Ikr. I missed one alr oops after competition day. Was so tired rly cannot wake up LOL. So better not miss more."}, {"role": "A", "response": "(there is me not caring abt my HSI2004 and LSM2233 weekly quizzes) 💀💀💀💀💀"}],
-    ]
-    labels = predictor.predict(dialogues, explainer_mode=True) # set explainer_mode=True to get probabilities
-    print(labels)
+    #dialogues = [
+    #    [{"role": "A", "response": "try ah HAHA. Nid go another tut first shag. Wanted to dip but 0.4 attendence per sesh lol. Better not."}, {"role": "B", "response": "ye AHAHA. wah in this day and age, 0.4% could make a difference sia. scary"}, {"role": "A", "response": "Right. Ikr. I missed one alr oops after competition day. Was so tired rly cannot wake up LOL. So better not miss more."}, {"role": "A", "response": "(there is me not caring abt my HSI2004 and LSM2233 weekly quizzes) 💀💀💀💀💀"}],
+    #]
+    #labels = predictor.predict(dialogues, explainer_mode=False) # set explainer_mode=True to get probabilities
+    df = pd.read_csv("Data/train.csv")
+    dialogues = df["Dialogue"].apply(extract_dialogues).to_list()
+    print(dialogues)
+    labels = df["Label"].tolist()
+    true_labels = []
+    predictions = []
+    for i in range(len(dialogues)):
+        print(i)
+        try:
+            predictions.append(predictor.predict(dialogues[i], explainer_mode = False)[0])
+            true_labels.append(labels[i])
+        except:
+            print("Error in prediction")
+            continue
+    
+
+    classes = [-1, 0, 1]
+    for cls in classes:
+        mask = true_labels == cls
+        acc = np.mean(predictions[mask] == true_labels[mask])
+        print(f"Accuracy for class {cls}: {acc}")
+
+    #f1_macro = f1_score(true_labels, predictions, average='macro')
+    #print("F1 Score (Macro):", f1_macro)
